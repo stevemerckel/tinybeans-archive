@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30611.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TBA.Common", "TBA.Common\TBA.Common.csproj", "{ED052FD0-2179-42B3-9D79-DC8FE49DCC4A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TBA.ConsoleApp", "TBA.ConsoleApp\TBA.ConsoleApp.csproj", "{F8433184-0695-438C-94F1-693980B95D2E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ED052FD0-2179-42B3-9D79-DC8FE49DCC4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED052FD0-2179-42B3-9D79-DC8FE49DCC4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED052FD0-2179-42B3-9D79-DC8FE49DCC4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED052FD0-2179-42B3-9D79-DC8FE49DCC4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8433184-0695-438C-94F1-693980B95D2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8433184-0695-438C-94F1-693980B95D2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8433184-0695-438C-94F1-693980B95D2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8433184-0695-438C-94F1-693980B95D2E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {253C3C5A-8FAD-4E60-AC14-AB521DFF00D0}
+	EndGlobalSection
+EndGlobal
