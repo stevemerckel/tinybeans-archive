@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy &quot;$(ProjectDir)..\assets\header-dictionary.json&quot; &quot;$(TargetDir)&quot; /y" />
+    <Exec Command="xcopy &quot;$(ProjectDir)..\assets\*&quot; &quot;$(TargetDir)&quot; /y" />
   </Target>
 
 </Project>

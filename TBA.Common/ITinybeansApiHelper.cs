@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace TBA.Common
 {
@@ -8,6 +9,12 @@ namespace TBA.Common
     public interface ITinybeansApiHelper
     {
         /// <summary>
+        /// Returns a list of journal ID(s) from the API
+        /// </summary>
+        /// <returns>List of Journal ID(s)</returns>
+        List<int> GetJournalIds();
+
+        /// <summary>
         /// Gets JSON data for a specific date
         /// </summary>
         /// <param name="date">The target date (time is ignored)</param>
@@ -16,22 +23,25 @@ namespace TBA.Common
         /// <summary>
         /// Fetching a text value's data + metadata for a specific id
         /// </summary>
-        /// <param name="journalId">The archive's unique id</param>
+        /// <param name="journalId">The journal ID</param>
+        /// <param name="archiveId">The archive's unique id</param>
         /// <returns>Text archive object</returns>
-        ArchivedText GetTextData(string journalId);
+        ArchivedText GetTextData(int journalId, string archiveId);
 
         /// <summary>
         /// Fetching an image's data + metadata for a specific id
         /// </summary>
-        /// <param name="journalId">The archive's unique id</param>
+        /// <param name="journalId">The journal ID</param>
+        /// <param name="archiveId">The archive's unique id</param>
         /// <returns>Image archive object</returns>
-        ArchivedImage GetImageDate(string journalId);
+        ArchivedImage GetImageDate(int journalId, string archiveId);
 
         /// <summary>
         /// Fetching a video's data + metadata for a specific id
         /// </summary>
-        /// <param name="journalId">The archive's unique id</param>
+        /// <param name="journalId">The journal ID</param>
+        /// <param name="archiveId">The archive's unique id</param>
         /// <returns>Video archive object</returns>
-        ArchivedVideo GetVideoData(string journalId);
+        ArchivedVideo GetVideoData(int journalId, string archiveId);
     }
 }
