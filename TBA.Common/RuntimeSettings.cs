@@ -1,49 +1,28 @@
-﻿using System;
-
-namespace TBA.Common
+﻿namespace TBA.Common
 {
+    /// <inheritdoc />
     public class RuntimeSettings : IRuntimeSettings
     {
-        private volatile bool _isInitialized;
-        private readonly object _lock = new object();
-        private string _jsonContent;
-
-        public string AuthorizationHeaderKey
+        /// <summary>
+        /// Loads the runtime settings object
+        /// </summary>
+        /// <param name="authorizationHeaderKey">API header key for authorization</param>
+        /// <param name="authorizationHeaderValue">API header value for authorization</param>
+        /// <param name="apiBaseUrl">The bse URL for the API</param>
+        public RuntimeSettings(string authorizationHeaderKey, string authorizationHeaderValue, string apiBaseUrl)
         {
-            get => InitializeAndReturnValue(nameof(AuthorizationHeaderKey));
+            AuthorizationHeaderKey = authorizationHeaderKey;
+            AuthorizationHeaderValue = authorizationHeaderValue;
+            ApiBaseUrl = apiBaseUrl;
         }
 
-        public string AuthorizationHeaderValue
-        {
-            get => InitializeAndReturnValue(nameof(AuthorizationHeaderValue));
-        }
+        /// <inheritdoc />
+        public string AuthorizationHeaderKey { get; }
 
-        public string ApiBaseUrl
-        {
-            get => InitializeAndReturnValue(nameof(ApiBaseUrl));
-        }
+        /// <inheritdoc />
+        public string AuthorizationHeaderValue { get; }
 
-        private string InitializeAndReturnValue(string propertyName)
-        {
-            var isFileReadSuccess = true; // important to init as true
-            lock (_lock)
-            {
-                if (!_isInitialized)
-                {
-                    // load from file: use try-catch --> if "catch", set isFileReadSuccess to false
-                    // send contents to _jsonContent
-                }
-            }
-
-            if (!isFileReadSuccess || string.IsNullOrWhiteSpace(_jsonContent))
-            {
-                throw new SettingsFailureException("General failure fetching the JSON content of runtime settings.");
-            }
-
-
-            // query and read from JsonContents for target propertyName
-
-            throw new NotImplementedException();
-        }
+        /// <inheritdoc />
+        public string ApiBaseUrl { get; }
     }
 }

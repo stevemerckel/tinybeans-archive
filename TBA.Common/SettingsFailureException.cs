@@ -8,7 +8,7 @@ namespace TBA.Common
     public sealed class SettingsFailureException : ApplicationException
     {
         /// <summary>
-        /// Default ctor
+        /// Information about failure related to the "settings" file or the <seealso cref="IRuntimeSettings"/> object.
         /// </summary>
         /// <param name="message">The details of the error</param>
         public SettingsFailureException(string message) : base(message)

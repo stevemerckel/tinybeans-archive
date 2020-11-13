@@ -25,6 +25,8 @@ namespace TBA.Common
             if (runtimeSettings == null)
                 throw new NullReferenceException(nameof(runtimeSettings));
 
+            // todo: FAKE THIS --> _runtimeSettings = new RuntimeSettings();
+
             // validate runtime settings
         }
 
@@ -36,7 +38,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public ArchivedImage GetImageDate(int journalId, string archiveId)
+        public ArchivedImage GetImageData(int journalId, string archiveId)
         {
             throw new NotImplementedException();
         }
@@ -102,7 +104,7 @@ namespace TBA.Common
             }
 
             // todo: got an ok response, proceed as normal
-            throw new NotImplementedException();
+            return response.Content.ReadAsStringAsync().Result;
         }
     }
 }

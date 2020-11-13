@@ -34,7 +34,7 @@ namespace TBA.Common
         /// <param name="journalId">The journal ID</param>
         /// <param name="archiveId">The archive's unique id</param>
         /// <returns>Image archive object</returns>
-        ArchivedImage GetImageDate(int journalId, string archiveId);
+        ArchivedImage GetImageData(int journalId, string archiveId);
 
         /// <summary>
         /// Fetching a video's data + metadata for a specific id
