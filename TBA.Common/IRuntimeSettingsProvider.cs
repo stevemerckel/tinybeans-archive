@@ -8,6 +8,6 @@
         /// <summary>
         /// Returns a runtime settings collection object
         /// </summary>
-        IRuntimeSettings Get();
+        IRuntimeSettings GetRuntimeSettings();
     }
 }

@@ -1,6 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
+using Newtonsoft.Json;
 
 namespace TBA.Common
 {
@@ -14,7 +14,7 @@ namespace TBA.Common
         private IRuntimeSettings _runtimeSettings;
 
         /// <inheritdoc />
-        public IRuntimeSettings Get()
+        public IRuntimeSettings GetRuntimeSettings()
         {
             lock (_lock)
             {
@@ -26,17 +26,22 @@ namespace TBA.Common
                 var runtimeDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 var settingsLocation = Path.Combine(runtimeDirectory, ExpectedFileName);
                 if (!File.Exists(settingsLocation))
-                    throw new FileNotFoundException($"Could not find '{ExpectedFileName}' in '{runtimeDirectory}' !!");
+                    throw new SettingsFailureException($"Could not find '{ExpectedFileName}' in '{runtimeDirectory}' !!");
 
                 var fileContents = File.ReadAllText(settingsLocation);
                 if (string.IsNullOrWhiteSpace(fileContents))
                     throw new SettingsFailureException($"No content was found in file: {settingsLocation}");
 
-
+                JsonSerializerSettings convertSettings = new JsonSerializerSettings() 
+                { 
+                    
+                };
+                var rs = JsonConvert.DeserializeObject<RuntimeSettings>(fileContents, new RuntimeSettingsJsonConverter<RuntimeSettings>());
+                _runtimeSettings = rs;
                 _isInitialized = true;
-                throw new NotImplementedException();
             }
 
+            return _runtimeSettings;
         }
     }
 }

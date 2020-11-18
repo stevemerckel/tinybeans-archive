@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Mime;
+using Newtonsoft.Json.Linq;
 
 namespace TBA.Common
 {
@@ -10,30 +14,35 @@ namespace TBA.Common
     {
         private readonly IAppLogger _logger;
         private readonly IRuntimeSettings _runtimeSettings;
+        private readonly HttpClient _client;
 
         /// <summary>
         /// Default ctor
         /// </summary>
         /// <param name="logger">Logging object</param>
-        public TinybeansApiHelper(IAppLogger logger, IRuntimeSettings runtimeSettings)
+        public TinybeansApiHelper(IAppLogger logger, IRuntimeSettingsProvider runtimeSettingsProvider)
         {
             _logger = logger;
             if (logger == null)
                 throw new NullReferenceException(nameof(logger));
 
-            _runtimeSettings = runtimeSettings;
-            if (runtimeSettings == null)
-                throw new NullReferenceException(nameof(runtimeSettings));
-
-            // todo: FAKE THIS --> _runtimeSettings = new RuntimeSettings();
+            _runtimeSettings = runtimeSettingsProvider.GetRuntimeSettings();
+            if (_runtimeSettings == null)
+                throw new NullReferenceException(nameof(_runtimeSettings));
 
             // validate runtime settings
+            _runtimeSettings.ValidateSettings();
+
+            // init http client
+            _client = new HttpClient()
+            {
+                BaseAddress = new Uri(_runtimeSettings.ApiBaseUrl)
+            };
         }
 
         /// <inheritdoc />
         public string GetByDate(DateTime date)
         {
-            var partialUrlFormat = $"";
             throw new NotImplementedException();
         }
 
@@ -46,11 +55,19 @@ namespace TBA.Common
         public List<int> GetJournalIds()
         {
             const string PartialUrl = "/api/1/journals";
-            var json = RestApiGetString(PartialUrl, System.Net.Mime.MediaTypeNames.Application.Json);
-            _logger.Info($"JSON = {json}");
-            
-            // todo: parse JSON, grab journal id(s), return collection
-            return null;
+            var json = RestApiGetString(PartialUrl, MediaTypeNames.Application.Json);
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                _logger.Warn($"No JSON returned from {nameof(GetJournalIds)}");
+                return null;
+            }
+
+            _logger.Debug($"JSON response from {nameof(GetJournalIds)}:{Environment.NewLine}{json}");
+            var content = JObject.Parse(json);
+            var journalEntities = (JArray)content["journals"];
+            return journalEntities
+                .Select(x => (int)x["id"])
+                .ToList();
         }
 
         /// <inheritdoc />
@@ -71,18 +88,20 @@ namespace TBA.Common
         /// <param name="partialUrl">The partial URL to send</param>
         /// <param name="mediaTypeName">The response's media type name.  Recommended to use the <see cref="System.Net.Mime.MediaTypeNames"/> static class' properties instead of hard-coding a value.</param>
         /// <returns>Response content if successful</returns>
+        /// <remarks>A pointer in direction of HttpResponseMessage containing GZip content came from Rick Strahl's blog (https://weblog.west-wind.com/posts/2007/jun/29/httpwebrequest-and-gzip-http-responses), then did some tuning on my original decompress based on DotNetPerls article (https://www.dotnetperls.com/decompress)</remarks>
         private string RestApiGetString(string partialUrl, string mediaTypeName = null)
         {
-            var client = new HttpClient()
-            {
-                BaseAddress = new Uri(_runtimeSettings.ApiBaseUrl)
-            };
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(_runtimeSettings.AuthorizationHeaderKey, _runtimeSettings.AuthorizationHeaderValue);
+            var request = new HttpRequestMessage(HttpMethod.Get, partialUrl);
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(_runtimeSettings.AuthorizationHeaderValue);
 
             if (!string.IsNullOrWhiteSpace(mediaTypeName))
-                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(mediaTypeName));
+            {
+                request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(mediaTypeName));
+                request.Headers.AcceptEncoding.Add(new System.Net.Http.Headers.StringWithQualityHeaderValue("gzip"));
+                request.Headers.AcceptEncoding.Add(new System.Net.Http.Headers.StringWithQualityHeaderValue("deflate"));
+            }
 
-            HttpResponseMessage response = client.GetAsync(partialUrl).Result;
+            HttpResponseMessage response = _client.SendAsync(request).Result;
             if (response.StatusCode != System.Net.HttpStatusCode.OK)
             {
                 // some failure happened
@@ -103,8 +122,36 @@ namespace TBA.Common
                 // todo: early exit ??
             }
 
-            // todo: got an ok response, proceed as normal
-            return response.Content.ReadAsStringAsync().Result;
+            // got an ok response, proceed as normal
+            string responseString;
+            if (response.Content.Headers.ContentEncoding?.Contains("gzip") ?? false)
+            {
+                using (GZipStream stream = new GZipStream(new MemoryStream(response.Content.ReadAsByteArrayAsync().Result), CompressionMode.Decompress))
+                {
+                    const int size = 4096;
+                    byte[] buffer = new byte[size];
+                    using (MemoryStream memory = new MemoryStream())
+                    {
+                        int count = 0;
+                        do
+                        {
+                            count = stream.Read(buffer, 0, size);
+                            if (count > 0)
+                            {
+                                memory.Write(buffer, 0, count);
+                            }
+                        }
+                        while (count > 0);
+                        responseString = System.Text.Encoding.UTF8.GetString(memory.ToArray());
+                    }
+                }
+            }
+            else
+            {
+                responseString = response.Content.ReadAsStringAsync().Result;
+            }
+
+            return responseString;
         }
     }
 }

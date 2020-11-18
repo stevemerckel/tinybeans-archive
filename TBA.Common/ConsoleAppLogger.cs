@@ -1,19 +1,16 @@
-﻿namespace TBA.Common
+﻿using System;
+
+namespace TBA.Common
 {
     /// <summary>
-    /// Serilog implementation of <seealso cref="IAppLogger"/>
+    /// Logger that only outputs to the Console on "stdout" stream, except for <see cref="Debug(string)"/> that writes to the "dbgout" stream.
     /// </summary>
-    /// <remarks>
-    /// Need to actually wire it up to Serilog, for now just doing the same thing as the <seealso cref="ConsoleAppLogger"/>
-    /// </remarks>
-    public sealed class SerilogAppLogger : IAppLogger
+    public sealed class ConsoleAppLogger : IAppLogger
     {
-        private readonly ConsoleAppLogger _console = new ConsoleAppLogger();
-
         /// <inheritdoc />
         public void Critical(string message)
         {
-            _console.Critical(message);
+            Write(nameof(Critical), message);
         }
 
         /// <inheritdoc />
@@ -25,19 +22,24 @@
         /// <inheritdoc />
         public void Error(string message)
         {
-            _console.Error(message);
+            Write(nameof(Error), message);
         }
 
         /// <inheritdoc />
         public void Info(string message)
         {
-            _console.Info(message);
+            Write(nameof(Info), message);
         }
 
         /// <inheritdoc />
         public void Warn(string message)
         {
-            _console.Warn(message);
+            Write(nameof(Warn), message);
+        }
+
+        private void Write(string level, string message)
+        {
+            Console.WriteLine($"[{level}]  {message}");
         }
     }
 }

@@ -1,0 +1,7 @@
+{
+	"api": {
+		"base-url": "https://tinybeans.com",
+		"auth-header-name": "authorization",
+		"auth-header-value": "INSERT-YOUR-KEY-HERE"
+	}
+}

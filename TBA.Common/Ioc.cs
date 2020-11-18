@@ -7,10 +7,11 @@ namespace TBA.Common
     /// </summary>
     public class Ioc : NinjectModule
     {
+        /// <inheritdoc />
         public override void Load()
         {
-            Bind<IAppLogger>().To<SerilogAppLogger>().InSingletonScope();
-            Bind<IRuntimeSettings>().To<RuntimeSettings>().InSingletonScope();
+            Bind<IAppLogger>().To<ConsoleAppLogger>().InSingletonScope(); // todo: swap for SerilogAppLogger when that is finished
+            Bind<IRuntimeSettingsProvider>().To<RuntimeSettingsProvider>().InSingletonScope();
             Bind<ITinybeansApiHelper>().To<TinybeansApiHelper>().InThreadScope();
         }
     }
