@@ -52,22 +52,53 @@ namespace TBA.Common
             throw new NotImplementedException();
         }
 
-        public List<int> GetJournalIds()
+        public List<JournalSummary> GetJournalSummaries()
         {
             const string PartialUrl = "/api/1/journals";
             var json = RestApiGetString(PartialUrl, MediaTypeNames.Application.Json);
             if (string.IsNullOrWhiteSpace(json))
             {
-                _logger.Warn($"No JSON returned from {nameof(GetJournalIds)}");
+                _logger.Warn($"No JSON returned from {nameof(GetJournalSummaries)}");
                 return null;
             }
 
-            _logger.Debug($"JSON response from {nameof(GetJournalIds)}:{Environment.NewLine}{json}");
+            var tz = System.TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
+
+
+            _logger.Debug($"JSON response from {nameof(GetJournalSummaries)}:{Environment.NewLine}{json}");
             var content = JObject.Parse(json);
             var journalEntities = (JArray)content["journals"];
-            return journalEntities
-                .Select(x => (int)x["id"])
-                .ToList();
+            var journals = new List<JournalSummary>();
+            foreach (var j in journalEntities)
+            {
+                var children = new List<Child>();
+                foreach (var c in (JArray)j["children"])
+                {
+                    var child = new Child
+                    {
+                        Id = (long)c["id"],
+                        Url = (string)c["URL"],
+                        FirstName = (string)c["firstName"],
+                        LastName = (string)c["lastName"],
+                        BornOn = DateTime.ParseExact((string)c["dob"], "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+                        Gender = (string)c["gender"]
+                    };
+                    children.Add(child);
+                }
+
+                var journal = new JournalSummary
+                {
+                    Id = (long)j["id"],
+                    CreatedOnEpoch = (long)j["timestamp"],
+                    Title = (string)j["title"],
+                    Url = (string)j["URL"],
+                    Children = children
+                };
+
+                journals.Add(journal);
+            }
+
+            return journals;
         }
 
         /// <inheritdoc />
@@ -97,9 +128,9 @@ namespace TBA.Common
             if (!string.IsNullOrWhiteSpace(mediaTypeName))
             {
                 request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(mediaTypeName));
-                request.Headers.AcceptEncoding.Add(new System.Net.Http.Headers.StringWithQualityHeaderValue("gzip"));
-                request.Headers.AcceptEncoding.Add(new System.Net.Http.Headers.StringWithQualityHeaderValue("deflate"));
             }
+            request.Headers.AcceptEncoding.Add(new System.Net.Http.Headers.StringWithQualityHeaderValue("gzip"));
+            request.Headers.AcceptEncoding.Add(new System.Net.Http.Headers.StringWithQualityHeaderValue("deflate"));
 
             HttpResponseMessage response = _client.SendAsync(request).Result;
             if (response.StatusCode != System.Net.HttpStatusCode.OK)

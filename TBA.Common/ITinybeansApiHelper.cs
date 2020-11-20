@@ -12,7 +12,7 @@ namespace TBA.Common
         /// Returns a list of journal ID(s) from the API
         /// </summary>
         /// <returns>List of Journal ID(s)</returns>
-        List<int> GetJournalIds();
+        List<JournalSummary> GetJournalSummaries();
 
         /// <summary>
         /// Gets JSON data for a specific date
