@@ -41,5 +41,14 @@ namespace TBA.Common
 
         /// <inheritdoc />
         public string SourceUrl { get; private set; }
+
+        /// <inheritdoc />
+        public void Download(string destinationLocation)
+        {
+            // todo:
+            //  - image and video: download to received file path
+            //  - text: write "caption" content to received file path
+            throw new NotImplementedException();
+        }
     }
 }

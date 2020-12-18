@@ -30,6 +30,12 @@ namespace TBA.Common
         /// <summary>
         /// URL to fetch the resource
         /// </summary>
-        public string SourceUrl {get;}
+        public string SourceUrl { get; }
+
+        /// <summary>
+        /// Downloads the content to the returned byte array
+        /// </summary>
+        /// <param name="destinationLocation">The location file path to write the content</param>
+        public void Download(string destinationLocation);
     }
 }
