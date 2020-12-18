@@ -41,9 +41,24 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public string GetByDate(DateTime date)
+        public string GetByDate(DateTime date, long journalId)
         {
             throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public string GetEntriesByYearMonth(DateTime yearMonth, long journalId)
+        {
+            var partialUrl = $"/api/1/journals/{journalId}/entries?month={yearMonth.Month}&year={yearMonth.Year}&idsOnly=true";
+            var json = RestApiGetString(partialUrl, MediaTypeNames.Application.Json);
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                _logger.Warn($"No JSON returned from {nameof(GetJournalSummaries)}");
+                return null;
+            }
+
+            _logger.Debug($"JSON response from {nameof(GetJournalSummaries)}:{Environment.NewLine}{json}");
+            return json;
         }
 
         /// <inheritdoc />
@@ -52,6 +67,7 @@ namespace TBA.Common
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public List<JournalSummary> GetJournalSummaries()
         {
             const string PartialUrl = "/api/1/journals";
@@ -61,9 +77,6 @@ namespace TBA.Common
                 _logger.Warn($"No JSON returned from {nameof(GetJournalSummaries)}");
                 return null;
             }
-
-            var tz = System.TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
-
 
             _logger.Debug($"JSON response from {nameof(GetJournalSummaries)}:{Environment.NewLine}{json}");
             var content = JObject.Parse(json);

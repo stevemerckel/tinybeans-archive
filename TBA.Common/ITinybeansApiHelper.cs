@@ -18,7 +18,13 @@ namespace TBA.Common
         /// Gets JSON data for a specific date
         /// </summary>
         /// <param name="date">The target date (time is ignored)</param>
-        string GetByDate(DateTime date);
+        string GetByDate(DateTime date, long journalId);
+
+        /// <summary>
+        /// Fetches journal entries for the Year + Month given.
+        /// </summary>
+        /// <param name="yearMonth">The target calendar year + month</param>
+        string GetEntriesByYearMonth(DateTime yearMonth, long journalId);
 
         /// <summary>
         /// Fetching a text value's data + metadata for a specific id

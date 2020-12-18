@@ -14,7 +14,7 @@ namespace TBA.Common
 
         public override string ToString()
         {
-            return $"[{Id}]  {Title}  ({Url})";
+            return $"[{Id}]  {Title} with {Children?.Count ?? 0} children ({Url})";
         }
     }
 }

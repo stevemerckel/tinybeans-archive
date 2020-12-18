@@ -26,5 +26,10 @@ namespace TBA.Common
         /// The type of this archive entry
         /// </summary>
         public ArchiveType ArchiveType { get; }
+
+        /// <summary>
+        /// URL to fetch the resource
+        /// </summary>
+        public string SourceUrl {get;}
     }
 }

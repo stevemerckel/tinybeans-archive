@@ -1,5 +1,6 @@
 ﻿using Ninject;
 using System;
+using System.Linq;
 using TBA.Common;
 
 namespace TBA.ConsoleApp
@@ -27,19 +28,20 @@ namespace TBA.ConsoleApp
             var journalSummaries = tbh.GetJournalSummaries();
             logger.Info($"Found journals: Count = {journalSummaries?.Count ?? 0}");
             journalSummaries?.ForEach(x => logger.Info($"  {x}"));
+            tbh.GetEntriesByYearMonth(new DateTime(2020, 9, 29), journalSummaries.First().Id);
 
-            var currentDate = rangeStart.Date;
-            while (currentDate <= rangeEnd.Date)
-            {
-                // connect to api for this specific day
+            //var currentDate = rangeStart.Date;
+            //while (currentDate <= rangeEnd.Date)
+            //{
+            //    // connect to api for this specific day
 
-                // pull down all JSON entries
-                // and hydrate to POCO
+            //    // pull down all JSON entries
+            //    // and hydrate to POCO
 
-                // dump general data to console as proof
+            //    // dump general data to console as proof
 
-                // increment currentDate with a day
-            }
+            //    // increment currentDate with a day
+            //}
 
             Console.WriteLine("EOP");
             Console.ReadLine();
