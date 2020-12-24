@@ -33,6 +33,12 @@ namespace TBA.Common
         public string SourceUrl { get; }
 
         /// <summary>
+        /// The optional text caption for the content
+        /// </summary>
+        /// <remarks>Types <see cref="ArchiveType.Video"/> and <see cref="ArchiveType.Image"/> *may* have a caption, but <see cref="ArchiveType.Text"/> will always have a value</remarks>
+        public string Caption { get; }
+
+        /// <summary>
         /// Downloads the content to the returned byte array
         /// </summary>
         /// <param name="destinationLocation">The location file path to write the content</param>

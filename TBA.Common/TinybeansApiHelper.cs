@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Mime;
 using Newtonsoft.Json.Linq;
@@ -47,7 +46,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public string GetEntriesByYearMonth(DateTime yearMonth, long journalId)
+        public List<ArchivedContent> GetEntriesByYearMonth(DateTime yearMonth, long journalId)
         {
             var partialUrl = $"/api/1/journals/{journalId}/entries?month={yearMonth.Month}&year={yearMonth.Year}&idsOnly=true";
             var json = RestApiGetString(partialUrl, MediaTypeNames.Application.Json);
@@ -57,12 +56,17 @@ namespace TBA.Common
                 return null;
             }
 
+            //
+            // note: string values are unicode encoded, but not sure whether little endian or big endian,
+            //       need to find out the endian-ness of the strings
+            //
+
             _logger.Debug($"JSON response from {nameof(GetJournalSummaries)}:{Environment.NewLine}{json}");
             return json;
         }
 
         /// <inheritdoc />
-        public ArchivedImage GetImageData(int journalId, string archiveId)
+        public ArchivedContent GetJournalEntry(int journalId, string archiveId)
         {
             throw new NotImplementedException();
         }
@@ -112,18 +116,6 @@ namespace TBA.Common
             }
 
             return journals;
-        }
-
-        /// <inheritdoc />
-        public ArchivedText GetTextData(int journalId, string archiveId)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <inheritdoc />
-        public ArchivedVideo GetVideoData(int journalId, string archiveId)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>

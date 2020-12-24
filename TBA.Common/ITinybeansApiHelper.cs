@@ -24,7 +24,7 @@ namespace TBA.Common
         /// Fetches journal entries for the Year + Month given.
         /// </summary>
         /// <param name="yearMonth">The target calendar year + month</param>
-        string GetEntriesByYearMonth(DateTime yearMonth, long journalId);
+        List<ArchivedContent> GetEntriesByYearMonth(DateTime yearMonth, long journalId);
 
         /// <summary>
         /// Fetching a text value's data + metadata for a specific id
@@ -32,22 +32,6 @@ namespace TBA.Common
         /// <param name="journalId">The journal ID</param>
         /// <param name="archiveId">The archive's unique id</param>
         /// <returns>Text archive object</returns>
-        ArchivedText GetTextData(int journalId, string archiveId);
-
-        /// <summary>
-        /// Fetching an image's data + metadata for a specific id
-        /// </summary>
-        /// <param name="journalId">The journal ID</param>
-        /// <param name="archiveId">The archive's unique id</param>
-        /// <returns>Image archive object</returns>
-        ArchivedImage GetImageData(int journalId, string archiveId);
-
-        /// <summary>
-        /// Fetching a video's data + metadata for a specific id
-        /// </summary>
-        /// <param name="journalId">The journal ID</param>
-        /// <param name="archiveId">The archive's unique id</param>
-        /// <returns>Video archive object</returns>
-        ArchivedVideo GetVideoData(int journalId, string archiveId);
+        ArchivedContent GetJournalEntry(int journalId, string archiveId);
     }
 }

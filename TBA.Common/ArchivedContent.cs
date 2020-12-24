@@ -1,21 +1,49 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Net;
+using Newtonsoft;
+using Newtonsoft.Json;
 
 namespace TBA.Common
 {
     /// <summary>
-    /// Abstract class for all content journaled at Tinybeans
+    /// Container class for all content journaled at Tinybeans
     /// </summary>
-    public abstract class ArchivedContent : IArchivedContent
+    public class ArchivedContent : IArchivedContent
     {
+        [JsonConstructor]
+        public ArchivedContent(long id, string type, int year, int month, int day, List<string> blobs, long journalId)
+        {
+            Id = id.ToString();
+            DisplayedOn = new DateTime(year, month, day);
+            switch (type?.ToUpper())
+            {
+                case "PHOTO":
+                    ArchiveType = ArchiveType.Image;
+                    break;
+                case "TEXT":
+                    ArchiveType = ArchiveType.Text;
+                    break;
+                case "VIDEO":
+                    ArchiveType = ArchiveType.Video;
+                    break;
+                default:
+                    throw new ArgumentException($"Unable to determine type for {type?.ToUpper() ?? "[NULL]"}");
+            }
+
+        }
+
         /// <summary>
-        /// Default ctor
+        /// Structured ctor
         /// </summary>
         /// <param name="id">The journal id</param>
         /// <param name="displayedOn">The date this was displayed on</param>
         /// <param name="orderDisplayed">The order-position this was displayed on <see cref="DisplayedOn"/> date</param>
         /// <param name="type">The type of this archive</param>
         /// <param name="sourceUrl">The source URL for the file -- not used for type <seealso cref="ArchiveType.Text"/></param>
-        public ArchivedContent(string id, DateTime displayedOn, int orderDisplayed, ArchiveType type, string sourceUrl = null)
+        public ArchivedContent(string id, DateTime displayedOn, int orderDisplayed, ArchiveType type, string caption, string sourceUrl = null)
         {
             Id = id;
             DisplayedOn = displayedOn;
@@ -28,27 +56,59 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public string Id { get; private set; }
+        public string Id { get; set; }
 
         /// <inheritdoc />
-        public DateTime DisplayedOn { get; private set; }
+        public DateTime DisplayedOn { get; set; }
 
         /// <inheritdoc />
-        public int OrderDisplayed { get; private set; }
+        public int OrderDisplayed { get; set; }
 
         /// <inheritdoc />
-        public ArchiveType ArchiveType { get; private set; }
+        public ArchiveType ArchiveType { get; set; }
 
         /// <inheritdoc />
-        public string SourceUrl { get; private set; }
+        public string SourceUrl { get; set; }
+
+        /// <inheritdoc />
+        public string Caption { get; set; }
 
         /// <inheritdoc />
         public void Download(string destinationLocation)
         {
-            // todo:
-            //  - image and video: download to received file path
-            //  - text: write "caption" content to received file path
-            throw new NotImplementedException();
+            if (File.Exists(destinationLocation))
+                File.Delete(destinationLocation);
+
+            if (ArchiveType == ArchiveType.Text)
+            {
+                File.WriteAllText(destinationLocation, Caption ?? string.Empty);
+                return;
+            }
+
+            if (ArchiveType == ArchiveType.Image || ArchiveType == ArchiveType.Video)
+            {
+                WebClient wc = null;
+                try
+                {
+                    wc = new WebClient();
+                    Debug.WriteLine($"Began download of '{SourceUrl ?? "[NULL]"}' to '{destinationLocation}'");
+                    wc.DownloadFile(SourceUrl, destinationLocation);
+                    Debug.WriteLine($"Finished download of '{SourceUrl ?? "[NULL]"}' to '{destinationLocation}'");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"{nameof(Exception)} thrown trying to download '{SourceUrl ?? "[NULL]"}' -- details: {ex}");
+                    throw;
+                }
+                finally
+                {
+                    wc?.Dispose();
+                }
+
+                return;
+            }
+
+            throw new NotSupportedException($"Archive type of {ArchiveType} is not yet supported!!");
         }
     }
 }
