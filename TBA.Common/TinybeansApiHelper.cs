@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Net.Mime;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace TBA.Common
@@ -40,9 +41,30 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public string GetByDate(DateTime date, long journalId)
+        public List<ArchivedContent> GetByDate(DateTime date, long journalId)
         {
-            throw new NotImplementedException();
+            var partialUrl = $"/api/1/journals/{journalId}/entries?day={date.Day}&month={date.Month}&year={date.Year}&idsOnly=true";
+            var json = RestApiGetString(partialUrl, MediaTypeNames.Application.Json);
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                _logger.Warn($"No JSON returned from {nameof(GetJournalSummaries)}");
+                return null;
+            }
+
+            //
+            // note: string values are unicode encoded, but not sure whether little endian or big endian.
+            // todo: find out the endian-ness of the strings
+            //
+            var content = JObject.Parse(json);
+            var result = new List<ArchivedContent>();
+            foreach (var e in (JArray)content["entries"])
+            {
+                var parseMe = e.ToString();
+                result.Add(JsonConvert.DeserializeObject<ArchivedContent>(parseMe));
+            }
+
+            _logger.Debug($"JSON response from {nameof(GetJournalSummaries)}:{Environment.NewLine}{json}");
+            return result;
         }
 
         /// <inheritdoc />
@@ -57,18 +79,19 @@ namespace TBA.Common
             }
 
             //
-            // note: string values are unicode encoded, but not sure whether little endian or big endian,
-            //       need to find out the endian-ness of the strings
+            // note: string values are unicode encoded, but not sure whether little endian or big endian.
+            // todo: find out the endian-ness of the strings
             //
+            var content = JObject.Parse(json);
+            var result = new List<ArchivedContent>();
+            foreach (var e in (JArray)content["entries"])
+            {
+                var parseMe = e.ToString();
+                result.Add(JsonConvert.DeserializeObject<ArchivedContent>(parseMe));
+            }
 
             _logger.Debug($"JSON response from {nameof(GetJournalSummaries)}:{Environment.NewLine}{json}");
-            return json;
-        }
-
-        /// <inheritdoc />
-        public ArchivedContent GetJournalEntry(int journalId, string archiveId)
-        {
-            throw new NotImplementedException();
+            return result;
         }
 
         /// <inheritdoc />
@@ -158,7 +181,7 @@ namespace TBA.Common
                 // todo: early exit ??
             }
 
-            // got an ok response, proceed as normal
+            // got an http-ok response
             string responseString;
             if (response.Content.Headers.ContentEncoding?.Contains("gzip") ?? false)
             {
@@ -186,6 +209,11 @@ namespace TBA.Common
             {
                 responseString = response.Content.ReadAsStringAsync().Result;
             }
+
+            // need to check the inner json "status" field to look for "ok"
+            var internalStatus = JObject.Parse(responseString).GetValue("status").ToString();
+            if (internalStatus?.ToLower() != "ok")
+                throw new Exception($"Tinybeans API returned a non-ok status code of '{internalStatus ?? "[NULL]"}'");
 
             return responseString;
         }

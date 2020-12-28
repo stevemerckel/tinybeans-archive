@@ -18,11 +18,6 @@ namespace TBA.Common
         public DateTime DisplayedOn { get; }
 
         /// <summary>
-        /// The order-position that the content was presented on <see cref="DisplayedOn"/> date
-        /// </summary>
-        public int OrderDisplayed { get; }
-
-        /// <summary>
         /// The type of this archive entry
         /// </summary>
         public ArchiveType ArchiveType { get; }
@@ -37,6 +32,11 @@ namespace TBA.Common
         /// </summary>
         /// <remarks>Types <see cref="ArchiveType.Video"/> and <see cref="ArchiveType.Image"/> *may* have a caption, but <see cref="ArchiveType.Text"/> will always have a value</remarks>
         public string Caption { get; }
+
+        /// <summary>
+        /// The parent's journal ID
+        /// </summary>
+        public string JournalId { get; }
 
         /// <summary>
         /// Downloads the content to the returned byte array

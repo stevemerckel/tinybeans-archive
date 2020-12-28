@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using Newtonsoft;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace TBA.Common
 {
@@ -14,25 +14,9 @@ namespace TBA.Common
     public class ArchivedContent : IArchivedContent
     {
         [JsonConstructor]
-        public ArchivedContent(long id, string type, int year, int month, int day, List<string> blobs, long journalId)
+        public ArchivedContent(long id, string type, int year, int month, int day, JObject blobs, long journalId, string caption)
+            : this (id.ToString(), new DateTime(year, month, day), ConvertArchiveTextToEnum(type), caption, journalId.ToString(), null)
         {
-            Id = id.ToString();
-            DisplayedOn = new DateTime(year, month, day);
-            switch (type?.ToUpper())
-            {
-                case "PHOTO":
-                    ArchiveType = ArchiveType.Image;
-                    break;
-                case "TEXT":
-                    ArchiveType = ArchiveType.Text;
-                    break;
-                case "VIDEO":
-                    ArchiveType = ArchiveType.Video;
-                    break;
-                default:
-                    throw new ArgumentException($"Unable to determine type for {type?.ToUpper() ?? "[NULL]"}");
-            }
-
         }
 
         /// <summary>
@@ -43,16 +27,17 @@ namespace TBA.Common
         /// <param name="orderDisplayed">The order-position this was displayed on <see cref="DisplayedOn"/> date</param>
         /// <param name="type">The type of this archive</param>
         /// <param name="sourceUrl">The source URL for the file -- not used for type <seealso cref="ArchiveType.Text"/></param>
-        public ArchivedContent(string id, DateTime displayedOn, int orderDisplayed, ArchiveType type, string caption, string sourceUrl = null)
-        {
+        public ArchivedContent(string id, DateTime displayedOn, ArchiveType type, string caption, string journalId, string sourceUrl = null)        {
             Id = id;
             DisplayedOn = displayedOn;
-            OrderDisplayed = orderDisplayed;
             ArchiveType = type;
             SourceUrl = type == ArchiveType.Text ? null : sourceUrl?.Trim();
+            Caption = caption;
+            JournalId = journalId;
 
-            if (ArchiveType != ArchiveType.Text && SourceUrl == null)
-                throw new ArgumentException($"You must provide a Source URL for {nameof(ArchiveType)}s of {nameof(ArchiveType.Image)} and {nameof(ArchiveType.Video)} !!");
+            // todo: re-enable the section below once JsonConstructor pass-through is tested.
+            //if (ArchiveType != ArchiveType.Text && SourceUrl == null)
+            //    throw new ArgumentException($"You must provide a Source URL for {nameof(ArchiveType)}s of {nameof(ArchiveType.Image)} and {nameof(ArchiveType.Video)} !!");
         }
 
         /// <inheritdoc />
@@ -62,9 +47,6 @@ namespace TBA.Common
         public DateTime DisplayedOn { get; set; }
 
         /// <inheritdoc />
-        public int OrderDisplayed { get; set; }
-
-        /// <inheritdoc />
         public ArchiveType ArchiveType { get; set; }
 
         /// <inheritdoc />
@@ -72,6 +54,9 @@ namespace TBA.Common
 
         /// <inheritdoc />
         public string Caption { get; set; }
+
+        /// <inheritdoc />
+        public string JournalId { get; set; }
 
         /// <inheritdoc />
         public void Download(string destinationLocation)
@@ -109,6 +94,32 @@ namespace TBA.Common
             }
 
             throw new NotSupportedException($"Archive type of {ArchiveType} is not yet supported!!");
+        }
+
+        private static ArchiveType ConvertArchiveTextToEnum(string type)
+        {
+            ArchiveType result;
+            switch (type?.ToUpper())
+            {
+                case "PHOTO":
+                    result = ArchiveType.Image;
+                    break;
+                case "TEXT":
+                    result = ArchiveType.Text;
+                    break;
+                case "VIDEO":
+                    result = ArchiveType.Video;
+                    break;
+                default:
+                    throw new ArgumentException($"Unable to determine type for {type?.ToUpper() ?? "[NULL]"}");
+            }
+
+            return result;
+        }
+
+        public override string ToString()
+        {
+            return $"[{Id}]: {ArchiveType} on {DisplayedOn.ToString("yyyy-MM-dd")}";
         }
     }
 }
