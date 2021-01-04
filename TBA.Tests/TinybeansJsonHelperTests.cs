@@ -1,17 +1,22 @@
-﻿using Newtonsoft.Json;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text.Json.Serialization;
 using TBA.Common;
 
 namespace TBA.Tests
 {
     [TestFixture]
-    public class ObjectTests
+    public class TinybeansJsonHelperTests : TestBase
     {
+        private readonly ITinybeansJsonHelper _sut;
         private readonly string _jsonSamplesLocation = Path.Combine(TestContext.CurrentContext.TestDirectory, "json-samples");
+        const string ValidButNotAlignedJson = @"{ ""one"": 1, ""two"": 2, ""three"":3 }";
+        const string InvalidJson = @"This Is Not Json";
+
+        public TinybeansJsonHelperTests()
+        {
+            _sut = new TinybeansJsonHelper(Logger);
+        }
 
         [OneTimeSetUp]
         public void EnsureJsonSamplesDirectoryExists()
@@ -26,15 +31,19 @@ namespace TBA.Tests
             var jsonLocation = Path.Combine(_jsonSamplesLocation, FileName);
             var json = CommonJsonFileAssertionsAndReturnContent(jsonLocation);
 
-            var dayEntry = JsonConvert.DeserializeObject<ArchivedContent>(json);
-            Assert.IsNotNull(dayEntry);
-            Assert.Multiple(() =>
+            var dayEntries = _sut.ParseArchivedContent(json);
+            Assert.IsNotNull(dayEntries);
+            Assert.IsTrue(dayEntries.Count > 0);
+            dayEntries.ForEach(d =>
             {
-                Assert.IsTrue(dayEntry.DisplayedOn > new DateTime(1900, 1, 1));
+                Assert.Multiple(() =>
+                {
+                    Assert.IsTrue(d.DisplayedOn > new DateTime(1900, 1, 1));
 
-                // todo: enable section below once URL pass-through is working
-                //Assert.IsFalse(string.IsNullOrWhiteSpace(dayEntry.SourceUrl));
-                //Assert.DoesNotThrow(() => new Uri(dayEntry.SourceUrl));
+                    // todo: enable section below once URL pass-through is working
+                    //Assert.IsFalse(string.IsNullOrWhiteSpace(dayEntry.SourceUrl));
+                    //Assert.DoesNotThrow(() => new Uri(dayEntry.SourceUrl));
+                });
             });
         }
 
@@ -45,8 +54,9 @@ namespace TBA.Tests
             var jsonLocation = Path.Combine(_jsonSamplesLocation, FileName);
             var json = CommonJsonFileAssertionsAndReturnContent(jsonLocation);
 
-            var yearMonthEntries = JsonConvert.DeserializeObject<List<ArchivedContent>>(json);
+            var yearMonthEntries = _sut.ParseArchivedContent(json);
             Assert.IsNotNull(yearMonthEntries);
+            Assert.IsTrue(yearMonthEntries.Count > 0);
             yearMonthEntries.ForEach(yme =>
             {
                 Assert.Multiple(() =>
@@ -67,7 +77,7 @@ namespace TBA.Tests
             var jsonLocation = Path.Combine(_jsonSamplesLocation, FileName);
             var json = CommonJsonFileAssertionsAndReturnContent(jsonLocation);
 
-            var summaries = JsonConvert.DeserializeObject<List<JournalSummary>>(json);
+            var summaries = _sut.ParseJournalSummaries(json);
             summaries.ForEach(s =>
             {
                 Assert.Multiple(() =>
@@ -79,40 +89,25 @@ namespace TBA.Tests
             });
         }
 
-        [Test]
-        public void Test_Deserialize_DayEntries_Fail()
+        [TestCase(InvalidJson)]
+        [TestCase(ValidButNotAlignedJson)]
+        public void Test_Deserialize_DayEntries_Fail(string json)
         {
-            const string FileName = "day-entries.json";
-            var jsonLocation = Path.Combine(_jsonSamplesLocation, FileName);
-            var json = CommonJsonFileAssertionsAndReturnContent(jsonLocation);
-            const int MangleSplitAt = 30;
-            var mangled = json.Substring(0, MangleSplitAt);
-            mangled += "This_Got_Mangled";
-            mangled += json.Substring(MangleSplitAt + 1);
-
-            Assert.Catch(() => JsonConvert.DeserializeObject<ArchivedContent>(mangled));
+            Assert.Catch(() => _sut.ParseArchivedContent(json));
         }
 
-        [Test]
-        public void Test_Deserialize_YearMonthEntries_Fail()
+        [TestCase(InvalidJson)]
+        [TestCase(ValidButNotAlignedJson)]
+        public void Test_Deserialize_YearMonthEntries_Fail(string json)
         {
-            const string FileName = "year-month-entries.json";
-            var jsonLocation = Path.Combine(_jsonSamplesLocation, FileName);
-            var json = CommonJsonFileAssertionsAndReturnContent(jsonLocation);
-            const int MangleSplitAt = 30;
-            var mangled = json.Substring(0, MangleSplitAt);
-            mangled += "This_Got_Mangled";
-            mangled += json.Substring(MangleSplitAt + 1);
-
-            Assert.Catch(() => JsonConvert.DeserializeObject<List<ArchivedContent>>(mangled));
+            Assert.Catch(() => _sut.ParseArchivedContent(json));
         }
 
-        [Test]
-        public void Test_Deserialize_JournalSummary_Fail()
+        [TestCase(InvalidJson)]
+        [TestCase(ValidButNotAlignedJson)]
+        public void Test_Deserialize_JournalSummary_Fail(string json)
         {
-            const string FileName = "journal-summary.json";
-            var jsonLocation = Path.Combine(_jsonSamplesLocation, FileName);
-            var json = CommonJsonFileAssertionsAndReturnContent(jsonLocation);
+            Assert.Catch(() => _sut.ParseJournalSummaries(json));
         }
 
         /// <summary>

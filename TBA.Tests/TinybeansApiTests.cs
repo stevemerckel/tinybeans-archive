@@ -6,7 +6,7 @@ using System.Text;
 namespace TBA.Tests
 {
     [TestFixture]
-    public class TinybeansApiTests
+    public class TinybeansApiTests : TestBase
     {
         
     }

@@ -15,12 +15,13 @@ namespace TBA.Common
         private readonly IAppLogger _logger;
         private readonly IRuntimeSettings _runtimeSettings;
         private readonly HttpClient _client;
+        private readonly ITinybeansJsonHelper _jsonHelper;
 
         /// <summary>
         /// Default ctor
         /// </summary>
         /// <param name="logger">Logging object</param>
-        public TinybeansApiHelper(IAppLogger logger, IRuntimeSettingsProvider runtimeSettingsProvider)
+        public TinybeansApiHelper(IAppLogger logger, IRuntimeSettingsProvider runtimeSettingsProvider, ITinybeansJsonHelper jsonHelper)
         {
             _logger = logger;
             if (logger == null)
@@ -33,6 +34,8 @@ namespace TBA.Common
             // validate runtime settings
             _runtimeSettings.ValidateSettings();
 
+            _jsonHelper = jsonHelper;
+
             // init http client
             _client = new HttpClient()
             {
@@ -41,7 +44,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public List<ArchivedContent> GetByDate(DateTime date, long journalId)
+        public List<IArchivedContent> GetByDate(DateTime date, long journalId)
         {
             var partialUrl = $"/api/1/journals/{journalId}/entries?day={date.Day}&month={date.Month}&year={date.Year}&idsOnly=true";
             var json = RestApiGetString(partialUrl, MediaTypeNames.Application.Json);
@@ -51,24 +54,11 @@ namespace TBA.Common
                 return null;
             }
 
-            //
-            // note: string values are unicode encoded, but not sure whether little endian or big endian.
-            // todo: find out the endian-ness of the strings
-            //
-            var content = JObject.Parse(json);
-            var result = new List<ArchivedContent>();
-            foreach (var e in (JArray)content["entries"])
-            {
-                var parseMe = e.ToString();
-                result.Add(JsonConvert.DeserializeObject<ArchivedContent>(parseMe));
-            }
-
-            _logger.Debug($"JSON response from {nameof(GetJournalSummaries)}:{Environment.NewLine}{json}");
-            return result;
+            return _jsonHelper.ParseArchivedContent(json);
         }
 
         /// <inheritdoc />
-        public List<ArchivedContent> GetEntriesByYearMonth(DateTime yearMonth, long journalId)
+        public List<IArchivedContent> GetEntriesByYearMonth(DateTime yearMonth, long journalId)
         {
             var partialUrl = $"/api/1/journals/{journalId}/entries?month={yearMonth.Month}&year={yearMonth.Year}&idsOnly=true";
             var json = RestApiGetString(partialUrl, MediaTypeNames.Application.Json);
@@ -78,20 +68,7 @@ namespace TBA.Common
                 return null;
             }
 
-            //
-            // note: string values are unicode encoded, but not sure whether little endian or big endian.
-            // todo: find out the endian-ness of the strings
-            //
-            var content = JObject.Parse(json);
-            var result = new List<ArchivedContent>();
-            foreach (var e in (JArray)content["entries"])
-            {
-                var parseMe = e.ToString();
-                result.Add(JsonConvert.DeserializeObject<ArchivedContent>(parseMe));
-            }
-
-            _logger.Debug($"JSON response from {nameof(GetJournalSummaries)}:{Environment.NewLine}{json}");
-            return result;
+            return _jsonHelper.ParseArchivedContent(json);
         }
 
         /// <inheritdoc />
@@ -105,40 +82,7 @@ namespace TBA.Common
                 return null;
             }
 
-            _logger.Debug($"JSON response from {nameof(GetJournalSummaries)}:{Environment.NewLine}{json}");
-            var content = JObject.Parse(json);
-            var journalEntities = (JArray)content["journals"];
-            var journals = new List<JournalSummary>();
-            foreach (var j in journalEntities)
-            {
-                var children = new List<Child>();
-                foreach (var c in (JArray)j["children"])
-                {
-                    var child = new Child
-                    {
-                        Id = (long)c["id"],
-                        Url = (string)c["URL"],
-                        FirstName = (string)c["firstName"],
-                        LastName = (string)c["lastName"],
-                        BornOn = DateTime.ParseExact((string)c["dob"], "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
-                        Gender = (string)c["gender"]
-                    };
-                    children.Add(child);
-                }
-
-                var journal = new JournalSummary
-                {
-                    Id = (long)j["id"],
-                    CreatedOnEpoch = (long)j["timestamp"],
-                    Title = (string)j["title"],
-                    Url = (string)j["URL"],
-                    Children = children
-                };
-
-                journals.Add(journal);
-            }
-
-            return journals;
+            return _jsonHelper.ParseJournalSummaries(json);
         }
 
         /// <summary>

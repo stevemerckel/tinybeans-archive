@@ -18,12 +18,12 @@ namespace TBA.Common
         /// Gets JSON data for a specific date
         /// </summary>
         /// <param name="date">The target date (time is ignored)</param>
-        List<ArchivedContent> GetByDate(DateTime date, long journalId);
+        List<IArchivedContent> GetByDate(DateTime date, long journalId);
 
         /// <summary>
         /// Fetches journal entries for the Year + Month given.
         /// </summary>
         /// <param name="yearMonth">The target calendar year + month</param>
-        List<ArchivedContent> GetEntriesByYearMonth(DateTime yearMonth, long journalId);
+        List<IArchivedContent> GetEntriesByYearMonth(DateTime yearMonth, long journalId);
     }
 }
