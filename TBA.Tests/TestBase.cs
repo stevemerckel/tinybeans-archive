@@ -1,5 +1,5 @@
-﻿using Moq;
-using System;
+﻿using System;
+using Moq;
 using TBA.Common;
 
 namespace TBA.Tests
