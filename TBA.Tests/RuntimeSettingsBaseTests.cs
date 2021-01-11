@@ -17,7 +17,7 @@ namespace TBA.Tests
         /// <summary>
         /// Default ctor
         /// </summary>
-        /// <param name="runtimeSettingsProvider">Runtime settings provider (mock) object</param>
+        /// <param name="runtimeSettingsProvider">Runtime settings provider object -- real or mock</param>
         public RuntimeSettingsBaseTests(IRuntimeSettingsProvider runtimeSettingsProvider)
         {
             _sut = runtimeSettingsProvider;
@@ -36,6 +36,37 @@ namespace TBA.Tests
             var settings = _sut.GetRuntimeSettings();
             var isValid = settings.ValidateSettings();
             Assert.IsTrue(isValid);
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("    ")]
+        [TestCase("not-a-real-url-at-all")]
+        public void Test_SettingsInvalidApiUrl_Fail(string invalidApiUrl)
+        {
+            var settings = _sut.GetRuntimeSettings();
+            settings.ApiBaseUrl = invalidApiUrl;
+            Assert.Throws<SettingsFailureException>(() => settings.ValidateSettings());
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("    ")]
+        public void Test_SettingsMissingAuthKey_Fail(string invalidKey)
+        {
+            var settings = _sut.GetRuntimeSettings();
+            settings.AuthorizationHeaderKey = invalidKey;
+            Assert.Throws<SettingsFailureException>(() => settings.ValidateSettings());
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("    ")]
+        public void Test_SettingsMissingAuthValue_Fail(string invalidKey)
+        {
+            var settings = _sut.GetRuntimeSettings();
+            settings.AuthorizationHeaderValue = invalidKey;
+            Assert.Throws<SettingsFailureException>(() => settings.ValidateSettings());
         }
     }
 }

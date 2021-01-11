@@ -4,6 +4,9 @@ using TBA.Common;
 
 namespace TBA.Tests
 {
+    /// <summary>
+    /// Unit tests for Runtime Settings + Provider
+    /// </summary>
     [TestFixture]
     public class RuntimeSettingsUnitTests : RuntimeSettingsBaseTests
     {
