@@ -26,6 +26,14 @@ namespace TBA.Common
             // note: string values are unicode encoded, but not sure whether little endian or big endian.
             // todo: find out the endian-ness of the strings
             //
+
+            //
+            // note: per-day entries are sorted where topmost in the list is the most recent.
+            // todo: look for "sortOrder" attribute; 
+            //         - if missing, consider topmost entry as the most recent in the day.
+            //         - if found, then go by a "sortOrder" integer value (the lower it is, the more recent it is.)
+            //
+
             var content = JObject.Parse(json);
             var result = new List<IArchivedContent>();
             foreach (var e in (JArray)content["entries"])

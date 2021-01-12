@@ -8,6 +8,9 @@ namespace TBA.Tests
     [TestFixture]
     public class TinybeansJsonHelperTests : TestBase
     {
+        private const string DayEntriesFileName = "day-entries.json";
+        private const string YearMonthEntriesFileName = "year-month-entries.json";
+        private const string JournalSummaryFileName = "journal-summary.json";
         private readonly ITinybeansJsonHelper _sut;
         private readonly string _jsonSamplesLocation = Path.Combine(TestContext.CurrentContext.TestDirectory, "json-samples");
         const string ValidButNotAlignedJson = @"{ ""one"": 1, ""two"": 2, ""three"":3 }";
@@ -24,12 +27,26 @@ namespace TBA.Tests
             Assert.IsTrue(Directory.Exists(_jsonSamplesLocation));
         }
 
+        [TestCase(DayEntriesFileName)]
+        [TestCase(YearMonthEntriesFileName)]
+        [TestCase(JournalSummaryFileName)]
+        public void Test_JsonSamplesHaveContent_Success(string fileName)
+        {
+            var location = Path.Combine(_jsonSamplesLocation, fileName);
+            Assert.IsTrue(File.Exists(location));
+            var fi = new FileInfo(location);
+            Assert.IsNotNull(fi);
+            Assert.AreNotEqual(0, fi.Length);
+            var content = File.ReadAllText(location);
+            Assert.IsTrue(content.Length > 100);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(content));
+        }
+
         [Test]
         public void Test_Deserialize_DayEntry_Success()
         {
-            const string FileName = "day-entries.json";
-            var jsonLocation = Path.Combine(_jsonSamplesLocation, FileName);
-            var json = CommonJsonFileAssertionsAndReturnContent(jsonLocation);
+            var jsonLocation = Path.Combine(_jsonSamplesLocation, DayEntriesFileName);
+            var json = File.ReadAllText(jsonLocation);
 
             var dayEntries = _sut.ParseArchivedContent(json);
             Assert.IsNotNull(dayEntries);
@@ -50,9 +67,8 @@ namespace TBA.Tests
         [Test]
         public void Test_Deserialize_YearMonthEntries_Success()
         {
-            const string FileName = "year-month-entries.json";
-            var jsonLocation = Path.Combine(_jsonSamplesLocation, FileName);
-            var json = CommonJsonFileAssertionsAndReturnContent(jsonLocation);
+            var jsonLocation = Path.Combine(_jsonSamplesLocation, YearMonthEntriesFileName);
+            var json = File.ReadAllText(jsonLocation);
 
             var yearMonthEntries = _sut.ParseArchivedContent(json);
             Assert.IsNotNull(yearMonthEntries);
@@ -73,9 +89,8 @@ namespace TBA.Tests
         [Test]
         public void Test_Deserialize_JournalSummary_Success()
         {
-            const string FileName = "journal-summary.json";
-            var jsonLocation = Path.Combine(_jsonSamplesLocation, FileName);
-            var json = CommonJsonFileAssertionsAndReturnContent(jsonLocation);
+            var jsonLocation = Path.Combine(_jsonSamplesLocation, JournalSummaryFileName);
+            var json = File.ReadAllText(jsonLocation);
 
             var summaries = _sut.ParseJournalSummaries(json);
             summaries.ForEach(s =>
@@ -108,23 +123,6 @@ namespace TBA.Tests
         public void Test_Deserialize_JournalSummary_Fail(string json)
         {
             Assert.Catch(() => _sut.ParseJournalSummaries(json));
-        }
-
-        /// <summary>
-        /// Wraps common pre-checks on the json file
-        /// </summary>
-        /// <param name="fileLocation">The JSON file location to be inspected</param>
-        /// <returns>The JSON content from the location</returns>
-        private string CommonJsonFileAssertionsAndReturnContent(string fileLocation)
-        {
-            Assert.IsTrue(File.Exists(fileLocation), $"JSON file not found: {fileLocation}");
-            var fi = new FileInfo(fileLocation);
-            Assert.IsNotNull(fi);
-            Assert.AreNotEqual(0, fi.Length);
-            var content = File.ReadAllText(fileLocation);
-            Assert.IsTrue(content.Length > 100);
-            Assert.IsFalse(string.IsNullOrWhiteSpace(content));
-            return content;
         }
     }
 }

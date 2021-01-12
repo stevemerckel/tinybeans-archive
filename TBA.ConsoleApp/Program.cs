@@ -28,7 +28,12 @@ namespace TBA.ConsoleApp
             var journalSummaries = tbh.GetJournalSummaries();
             logger.Info($"Found journals: Count = {journalSummaries?.Count ?? 0}");
             journalSummaries?.ForEach(x => logger.Info($"  {x}"));
-            tbh.GetEntriesByYearMonth(new DateTime(2020, 9, 29), journalSummaries.First().Id);
+
+            var journalId = journalSummaries.First().Id;
+            var targetDate = new DateTime(2021, 1, 4);
+            Console.WriteLine($"Fetching details for journal ID '{journalId}' for date '{targetDate.ToString("MM/dd/yyyy")}'");
+            var yearMonthEntries = tbh.GetEntriesByYearMonth(targetDate, journalSummaries.First().Id);
+            var dayEntries = tbh.GetByDate(targetDate, journalId);
 
             //var currentDate = rangeStart.Date;
             //while (currentDate <= rangeEnd.Date)
