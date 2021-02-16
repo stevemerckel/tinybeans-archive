@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TBA.Common
 {
@@ -22,27 +23,60 @@ namespace TBA.Common
         /// <inheritdoc />
         public List<IArchivedContent> ParseArchivedContent(string json)
         {
+            _logger.Debug($"JSON response from {nameof(ParseArchivedContent)}:{Environment.NewLine}{json}");
+
             //
             // note: string values are unicode encoded, but not sure whether little endian or big endian.
             // todo: find out the endian-ness of the strings
             //
 
             //
-            // note: per-day entries are sorted where topmost in the list is the most recent.
-            // todo: look for "sortOrder" attribute; 
-            //         - if missing, consider topmost entry as the most recent in the day.
-            //         - if found, then go by a "sortOrder" integer value (the lower it is, the more recent it is.)
+            // note: per-day entries are *usually* sorted where topmost in the list is the most recent.
+            //       however, look for "sortOrder" attribute.
+            //         - if found, then sort by a "sortOrder" integer value -- the higher it is, the more earlier in should be displayed.
+            //         - if not found, then consider topmost entry in collection as the earliest it should be shown for the day.
             //
 
             var content = JObject.Parse(json);
-            var result = new List<IArchivedContent>();
+            var entryCount = ((JArray)content["entries"]).Count();
+            var result = new List<IArchivedContent>(entryCount);
             foreach (var e in (JArray)content["entries"])
             {
                 var parseMe = e.ToString();
                 result.Add(JsonConvert.DeserializeObject<ArchivedContent>(parseMe));
             }
 
-            _logger.Debug($"JSON response from {nameof(ParseArchivedContent)}:{Environment.NewLine}{json}");
+            if (!result.Any())
+                return result;
+
+            var isSortOverrideFound = ((JArray)content["entries"]).Any(x => x["sortOrder"] != null);
+            if (!isSortOverrideFound)
+            {
+                return result;
+            }
+
+            // note: group by day first, then look for presence of "sortOrder" on a per-day basis.
+            //       only those should override the sortorder
+            _logger.Debug($"JSON response needs SORTING");
+            var daysWithSortOverride = result.Where(x => x.IsSortOverridePresent).Select(x => x.DisplayedOn).Distinct();
+            foreach (var d in daysWithSortOverride)
+            {
+                var matches = result.Where(x => x.DisplayedOn == d);
+                if (matches.Any() && matches.Any(x => x.IsSortOverridePresent))
+                {
+                    // the total number of items on a "sorted" day's entries is "N"
+                    // tinybeans displays content in a date by the highest "sortOrder" value (i.e. N --> 1)
+                    // we need to reverse this logic and adjust for zero-based incrementing (i.e. 0 --> N - 1)
+                    var highestValue = matches.Max(x => x.SortOverride.Value);
+                    var currentIndex = 0;
+                    foreach (var m in matches.OrderByDescending(x => x.SortOverride))
+                    {
+                        m.SortOverride = currentIndex;
+                        currentIndex++;
+                    }
+                }
+            }
+
             return result;
         }
 

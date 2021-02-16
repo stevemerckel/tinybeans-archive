@@ -4,7 +4,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Net.Mime;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace TBA.Common

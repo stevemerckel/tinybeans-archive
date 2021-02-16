@@ -32,8 +32,8 @@ namespace TBA.ConsoleApp
             var journalId = journalSummaries.First().Id;
             var targetDate = new DateTime(2021, 1, 4);
             Console.WriteLine($"Fetching details for journal ID '{journalId}' for date '{targetDate.ToString("MM/dd/yyyy")}'");
-            var yearMonthEntries = tbh.GetEntriesByYearMonth(targetDate, journalSummaries.First().Id);
             var dayEntries = tbh.GetByDate(targetDate, journalId);
+            //var yearMonthEntries = tbh.GetEntriesByYearMonth(targetDate, journalId);
 
             //var currentDate = rangeStart.Date;
             //while (currentDate <= rangeEnd.Date)
