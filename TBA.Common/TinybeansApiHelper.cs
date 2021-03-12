@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
 using Newtonsoft.Json.Linq;
@@ -13,8 +14,9 @@ namespace TBA.Common
     {
         private readonly IAppLogger _logger;
         private readonly IRuntimeSettings _runtimeSettings;
-        private readonly HttpClient _client;
+        private readonly HttpClient _httpClient;
         private readonly ITinybeansJsonHelper _jsonHelper;
+        private readonly WebClient _webClient;
 
         /// <summary>
         /// Default ctor
@@ -36,15 +38,42 @@ namespace TBA.Common
             _jsonHelper = jsonHelper;
 
             // init http client
-            _client = new HttpClient()
+            _httpClient = new HttpClient()
             {
                 BaseAddress = new Uri(_runtimeSettings.ApiBaseUrl)
             };
+
+            // init web client
+            _webClient = new WebClient();
+        }
+
+        /// <inheritdoc />
+        public bool DownloadFile(string remoteUrl, string localPath)
+        {
+            try
+            {
+                if (File.Exists(localPath))
+                    File.Delete(localPath);
+
+                _webClient.DownloadFile(remoteUrl, localPath);
+            }
+            catch (Exception ex)
+            {
+                var message = ex.ToString();
+                if (ex.InnerException != null)
+                    message += $"{Environment.NewLine}Inner Exception type '{ex.InnerException.GetType()}' -- Details: {ex.InnerException}";
+                _logger.Error(message);
+                return false;
+            }
+
+            return true;
         }
 
         /// <inheritdoc />
         public List<IArchivedContent> GetByDate(DateTime date, long journalId)
         {
+            _logger.Info($"Fetching day info for journal ID '{journalId}' for date '{date.ToString("MM/dd/yyyy")}'");
+
             var partialUrl = $"/api/1/journals/{journalId}/entries?day={date.Day}&month={date.Month}&year={date.Year}&idsOnly=true";
             var json = RestApiGetString(partialUrl, MediaTypeNames.Application.Json);
             if (string.IsNullOrWhiteSpace(json))
@@ -59,6 +88,8 @@ namespace TBA.Common
         /// <inheritdoc />
         public List<IArchivedContent> GetEntriesByYearMonth(DateTime yearMonth, long journalId)
         {
+            _logger.Info($"Fetching month info for journal ID '{journalId}' for date '{yearMonth.ToString("MMMM yyyy")}'");
+
             var partialUrl = $"/api/1/journals/{journalId}/entries?month={yearMonth.Month}&year={yearMonth.Year}&idsOnly=true";
             var json = RestApiGetString(partialUrl, MediaTypeNames.Application.Json);
             if (string.IsNullOrWhiteSpace(json))
@@ -103,7 +134,7 @@ namespace TBA.Common
             request.Headers.AcceptEncoding.Add(new System.Net.Http.Headers.StringWithQualityHeaderValue("gzip"));
             request.Headers.AcceptEncoding.Add(new System.Net.Http.Headers.StringWithQualityHeaderValue("deflate"));
 
-            HttpResponseMessage response = _client.SendAsync(request).Result;
+            HttpResponseMessage response = _httpClient.SendAsync(request).Result;
             if (response.StatusCode != System.Net.HttpStatusCode.OK)
             {
                 // some failure happened

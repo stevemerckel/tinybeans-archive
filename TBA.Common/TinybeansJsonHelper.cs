@@ -56,24 +56,34 @@ namespace TBA.Common
             }
 
             // note: group by day first, then look for presence of "sortOrder" on a per-day basis.
-            //       only those should override the sortorder
+            //       only those overridden "sortOrder" days should utilize the preferred sortorder
             _logger.Debug($"JSON response needs SORTING");
-            var daysWithSortOverride = result.Where(x => x.IsSortOverridePresent).Select(x => x.DisplayedOn).Distinct();
-            foreach (var d in daysWithSortOverride)
+            var daysWithSortOverride = result.Where(x => x.IsSortOverridePresent).Select(x => x.DisplayedOn.Date).Distinct();
+            var uniqueDays = result.Select(x => x.DisplayedOn.Date).Distinct();
+            foreach (var day in uniqueDays)
             {
-                var matches = result.Where(x => x.DisplayedOn == d);
-                if (matches.Any() && matches.Any(x => x.IsSortOverridePresent))
+                // the total number of items on a "sorted" day's entries is "N"
+                // tinybeans displays content in a date by the highest "sortOrder" value (i.e. N --> 1)
+                // we need to reverse this logic and adjust for zero-based incrementing (i.e. 0 --> N-1)
+                var matches = result.Where(x => x.DisplayedOn == day);
+                var hasOverriddenSortOrder = daysWithSortOverride.Contains(day);
+                var currentIndex = 0;
+                if (!hasOverriddenSortOrder)
                 {
-                    // the total number of items on a "sorted" day's entries is "N"
-                    // tinybeans displays content in a date by the highest "sortOrder" value (i.e. N --> 1)
-                    // we need to reverse this logic and adjust for zero-based incrementing (i.e. 0 --> N - 1)
-                    var highestValue = matches.Max(x => x.SortOverride.Value);
-                    var currentIndex = 0;
-                    foreach (var m in matches.OrderByDescending(x => x.SortOverride))
+                    // there is no existing override so order them normally: 0 --> N
+                    foreach (var m in matches)
                     {
                         m.SortOverride = currentIndex;
-                        currentIndex++;
                     }
+                    continue;
+                }
+
+                // an override was found, so flip the ordering so it becomes 0 --> N
+                var highestValue = matches.Max(x => x.SortOverride.Value);
+                foreach (var m in matches.OrderByDescending(x => x.SortOverride))
+                {
+                    m.SortOverride = currentIndex;
+                    currentIndex++;
                 }
             }
 

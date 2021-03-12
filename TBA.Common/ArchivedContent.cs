@@ -120,7 +120,7 @@ namespace TBA.Common
                     result = ArchiveType.Video;
                     break;
                 default:
-                    throw new ArgumentException($"Unable to determine type for {type?.ToUpper() ?? "[NULL]"}");
+                    throw new ArgumentException($"Unable to determine type for '{type?.ToUpper() ?? "[NULL]"}'");
             }
 
             return result;

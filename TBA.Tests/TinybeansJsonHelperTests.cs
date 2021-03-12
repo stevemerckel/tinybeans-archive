@@ -77,7 +77,7 @@ namespace TBA.Tests
             {
                 Assert.Multiple(() =>
                 {
-                    Assert.IsTrue(yme.DisplayedOn > new DateTime(1900, 1, 1));
+                    Assert.IsTrue(yme.DisplayedOn > new DateTime(1970, 1, 1));
 
                     // todo: enable section below once URL pass-through is working
                     //Assert.IsFalse(string.IsNullOrWhiteSpace(dayEntry.SourceUrl));

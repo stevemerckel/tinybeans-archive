@@ -31,22 +31,10 @@ namespace TBA.ConsoleApp
 
             var journalId = journalSummaries.First().Id;
             var targetDate = new DateTime(2021, 1, 4);
-            Console.WriteLine($"Fetching details for journal ID '{journalId}' for date '{targetDate.ToString("MM/dd/yyyy")}'");
+            
             var dayEntries = tbh.GetByDate(targetDate, journalId);
-            //var yearMonthEntries = tbh.GetEntriesByYearMonth(targetDate, journalId);
-
-            //var currentDate = rangeStart.Date;
-            //while (currentDate <= rangeEnd.Date)
-            //{
-            //    // connect to api for this specific day
-
-            //    // pull down all JSON entries
-            //    // and hydrate to POCO
-
-            //    // dump general data to console as proof
-
-            //    // increment currentDate with a day
-            //}
+            
+            var monthEntries = tbh.GetEntriesByYearMonth(targetDate, journalId);
 
             Console.WriteLine("EOP");
             Console.ReadLine();
