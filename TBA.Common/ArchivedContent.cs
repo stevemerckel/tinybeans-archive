@@ -70,6 +70,15 @@ namespace TBA.Common
         /// <inheritdoc />
         public void Download(string destinationLocation)
         {
+            // Rule: we do *not* try downloading content if the SourceUrl is a local path.
+            //       this situation would likely happen if the class was initialized from a local JSON structure.
+            if (!SourceUrl.StartsWith("http", StringComparison.InvariantCultureIgnoreCase))
+            {
+                // future: can we bring in IAppLogger instance and call its "Debug" method instead?
+                Debug.WriteLine($"The archive {nameof(Id)} of '{Id}' has a local path of '{SourceUrl}', so we are not going to download it.");
+                return;
+            }
+
             if (File.Exists(destinationLocation))
                 File.Delete(destinationLocation);
 
@@ -121,6 +130,25 @@ namespace TBA.Common
                     break;
                 default:
                     throw new ArgumentException($"Unable to determine type for '{type?.ToUpper() ?? "[NULL]"}'");
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Reads in a JSON string, and returns the initialized POCO object
+        /// </summary>
+        /// <param name="json"></param>
+        public static IArchivedContent FromInternalJson(string json)
+        {
+            ArchivedContent result = null;
+            try
+            {
+                result = JsonConvert.DeserializeObject<ArchivedContent>(json);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Unable to parse JSON received!  Details: {ex}");
             }
 
             return result;

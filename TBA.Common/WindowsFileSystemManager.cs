@@ -209,6 +209,20 @@ namespace TBA.Common
             return Path.Combine(first, second);
         }
 
+        /// <inheritdoc />
+        public string[] FileSearch(string searchPattern, string startingPath, bool includeSubDirs = false)
+        {
+            if (string.IsNullOrWhiteSpace(startingPath))
+                throw new ArgumentNullException($"{nameof(startingPath)} is required !!");
+
+            if (!DirectoryExists(startingPath))
+                throw new DirectoryNotFoundException($"Directory '{startingPath}' does not exist or is inaccessible !!");
+
+            var currentSearchPattern = string.IsNullOrWhiteSpace(searchPattern) ? "*" : searchPattern.Trim();
+            var searchOptions = includeSubDirs ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+            return Directory.GetFiles(startingPath, currentSearchPattern, searchOptions);
+        }
+
         /// <summary>
         /// Returns a hexadecimal string representation of the byte array.
         /// </summary>

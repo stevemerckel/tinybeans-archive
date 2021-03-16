@@ -82,5 +82,15 @@ namespace TBA.Common
         /// <param name="second">The second path</param>
         /// <returns>The combined path</returns>
         string PathCombine(string first, string second);
+
+        /// <summary>
+        /// <para>Returns a collection of file paths, starting from the <paramref name="startingPath"/>, and matching the search pattern of <paramref name="searchPattern"/>.</para>
+        /// <para>If you want to include searching subdirectories, set <paramref name="includeSubDirs"/> to <c>true</c>.  (Default behavior is <c>false</c>.)</para>
+        /// </summary>
+        /// <param name="searchPattern">The file search pattern</param>
+        /// <param name="startingPath">The starting directory to look for files</param>
+        /// <param name="includeSubDirs">Whether or not to look through subdirectories from <paramref name="startingPath"/>.  (Default is <c>false</c>.)</param>
+        /// <returns></returns>
+        string[] FileSearch(string searchPattern, string startingPath, bool includeSubDirs = false);
     }
 }

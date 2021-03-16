@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace TBA.Common
 {
@@ -9,14 +10,17 @@ namespace TBA.Common
     /// </summary>
     public sealed class JournalManager : IJournalManager
     {
+        private readonly IAppLogger _logger;
+
         /// <summary>
         /// Default ctor
         /// </summary>
         /// <param name="fileManager">File manager for working with file system</param>
         /// <param name="tinybeansApiHelper">Tinybeans API helper</param>
         /// <param name="rootForRepo"></param>
-        public JournalManager(IFileManager fileManager, ITinybeansApiHelper tinybeansApiHelper, string rootForRepo)
+        public JournalManager(IAppLogger logger, IFileManager fileManager, ITinybeansApiHelper tinybeansApiHelper, string rootForRepo)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             FileManager = fileManager ?? throw new ArgumentNullException(nameof(fileManager));
             TinybeansApi = tinybeansApiHelper ?? throw new ArgumentNullException(nameof(tinybeansApiHelper));
             Root = rootForRepo;
@@ -34,7 +38,7 @@ namespace TBA.Common
 
         /// <inheritdoc />
         public ITinybeansApiHelper TinybeansApi { get; private set; }
-        
+
         /// <inheritdoc />
         public string Root { get; private set; }
 
@@ -99,16 +103,63 @@ namespace TBA.Common
             //                  /day
             //                      YYYY-MM-DD-json (daily summary)
             //                      *.[text|image|video]
+
+            throw new NotImplementedException();
         }
 
-
-
+        /// <summary>
+        /// Reads metadata from file system for the supplied path and journal ID, and returns the collection of POCO objects from that metadata.
+        /// </summary>
+        /// <param name="journalId">The journal ID</param>
+        /// <param name="rootDirectory">The root directory for the entire repo</param>
+        /// <returns></returns>
         private List<IArchivedContent> GetArchivesFromLocalFileSystem(long journalId, string rootDirectory)
         {
             var expectedJournalDirectory = FileManager.PathCombine(rootDirectory, journalId.ToString());
-            return found;
+            if (!FileManager.DirectoryExists(expectedJournalDirectory))
+            {
+                _logger.Error($"The received directory does not exist or is inaccessible!  '{rootDirectory}'");
+                return null;
+            }
+
+            // find and parse the monthly json files.
+            // note: we only want the YYYY-MM.json files, not the YYYY-MM-DD.json files.
+            const string SearchCriteria = "????-??.json";
+            var jsonFiles = FileManager.FileSearch(SearchCriteria, expectedJournalDirectory, true);
+            if (!jsonFiles.Any())
+            {
+                _logger.Warn($"No matching JSON files found, so returning NULL.  Used search criteria '{SearchCriteria}' in directory '{expectedJournalDirectory}'");
+                return null;
+            }
+
+            // parse json content into POCOs
+            var archives = new List<IArchivedContent>(jsonFiles.Count() * 2); // hack: init with a wide net by assuming 2 content entries per JSON file
+            var fileProcessedCount = 0;
+            try
+            {
+                foreach (var file in jsonFiles)
+                {
+                    var content = FileManager.FileReadAllText(file);
+                    if (string.IsNullOrWhiteSpace(content))
+                    {
+                        _logger.Debug($"No JSON content was found in the file path: '{file}'");
+                        continue;
+                    }
+
+                    archives.Add(JsonConvert.DeserializeObject<ArchivedContent>(content));
+                    fileProcessedCount++;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Unable to parse the local content library!  Details: {ex}");
+                return null;
+            }
+
+            if (fileProcessedCount != jsonFiles.Count())
+                _logger.Warn($"Not all of the JSON files were processed!  Look earlier in the log for details.  (expected {jsonFiles.Count()} but only completed {fileProcessedCount})");
+
+            return archives;
         }
-
-
     }
 }
