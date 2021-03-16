@@ -1,4 +1,6 @@
-﻿namespace TBA.Common
+﻿using System.Collections.Generic;
+
+namespace TBA.Common
 {
     /// <summary>
     /// Methods and functions for working with file systems
@@ -63,5 +65,22 @@
         /// </summary>
         /// <param name="directoryPath">The directory to create.</param>
         void CreateDirectory(string directoryPath);
+
+        /// <summary>
+        /// Gets a list of directories in the specified directory path.  Supports searching sub directories.
+        /// </summary>
+        /// <param name="path">The path of the directory. Not case-sensitive.</param>
+        /// <param name="searchPattern">The search string to match agains the name of subdirectories in path.</param>
+        /// <param name="includeSubDirs">true to include subdirectories in search results; otherwise, false. Default is false.</param>
+        /// <returns>An array of string containing the directory paths.</returns>
+        string[] GetDirectories(string path, string searchPattern, bool includeSubDirs = false);
+
+        /// <summary>
+        /// Combines the two paths together
+        /// </summary>
+        /// <param name="first">The first path</param>
+        /// <param name="second">The second path</param>
+        /// <returns>The combined path</returns>
+        string PathCombine(string first, string second);
     }
 }

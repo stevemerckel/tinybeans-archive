@@ -149,6 +149,16 @@ namespace TBA.Common
                 Directory.CreateDirectory(directoryPath.Trim());
         }
 
+        /// <inheritdoc />
+        public string[] GetDirectories(string path, string searchPattern, bool includeSubDirs = false)
+        {
+            var myOption = includeSubDirs
+                ? SearchOption.AllDirectories
+                : SearchOption.TopDirectoryOnly;
+
+            return Directory.GetDirectories(path, searchPattern, myOption);
+        }
+
         /// <summary>
         /// Looks at the received file path (which may not yet exist!) and tests whether the folder structure exists.  If not, then it tries to create the folder structure.
         /// </summary>
@@ -191,6 +201,12 @@ namespace TBA.Common
                 CreateDirectory(makeMe);
                 Thread.Sleep(2);
             }
+        }
+
+        /// <inheritdoc />
+        public string PathCombine(string first, string second)
+        {
+            return Path.Combine(first, second);
         }
 
         /// <summary>

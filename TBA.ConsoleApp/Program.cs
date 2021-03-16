@@ -11,16 +11,8 @@ namespace TBA.ConsoleApp
 
         static void Main(string[] args)
         {
-            // todo: adjust to read from commandline params
             var rangeStart = new DateTime(2017, 7, 14, 1, 1, 1, DateTimeKind.Local);
-
-            // todo: adjust to read from param, or (if not given) add a few days to current date
             var rangeEnd = rangeStart.AddDays(60);
-
-            // for-each over each day
-            // todo: split range evenly into pools for multithread
-
-
 
             var logger = _kernel.Get<IAppLogger>();
             logger.Info("Hello World!");
@@ -35,6 +27,9 @@ namespace TBA.ConsoleApp
             var dayEntries = tbh.GetByDate(targetDate, journalId);
             
             var monthEntries = tbh.GetEntriesByYearMonth(targetDate, journalId);
+
+            var jm = _kernel.Get<IJournalManager>();
+            var pool = jm.GetArchives(journalId.ToString(), rangeStart, rangeEnd);
 
             Console.WriteLine("EOP");
             Console.ReadLine();

@@ -58,5 +58,19 @@ namespace TBA.Common
         {
             return source.ToString("YYYY-MM-dd");
         }
+
+        /// <summary>
+        /// Returns a bool on whether the source is between the inclusive start and inclusive end
+        /// </summary>
+        /// <param name="start">Inclusive beginning of range</param>
+        /// <param name="end">Inclusive end of range</param>
+        /// <returns>Boolean indicating between (<c>true</c>) or outside of range (<c>false</c>).</returns>
+        public static bool IsBetween(this DateTime source, DateTime start, DateTime end)
+        {
+            if (source == null || start == null || end == null)
+                return false; // fail safe
+
+            return start <= source && source <= end;
+        }
     }
 }

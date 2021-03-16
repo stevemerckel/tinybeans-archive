@@ -15,7 +15,7 @@ namespace TBA.Common
         List<JournalSummary> GetJournalSummaries();
 
         /// <summary>
-        /// Gets JSON data for a specific date
+        /// Fetches journal entries for the specific date given.
         /// </summary>
         /// <param name="date">The target date (time is ignored)</param>
         List<IArchivedContent> GetByDate(DateTime date, long journalId);

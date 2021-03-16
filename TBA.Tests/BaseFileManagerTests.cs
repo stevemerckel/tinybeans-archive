@@ -6,7 +6,7 @@ namespace TBA.Tests
     /// <summary>
     /// Base class for holding all common tests/logic for testing file system actions
     /// </summary>
-    public abstract class BaseFileManagerTests
+    public abstract class BaseFileManagerTests : TestBase
     {
         private readonly IFileManager _sut;
         protected string RuntimeLocation = TestContext.CurrentContext.TestDirectory;

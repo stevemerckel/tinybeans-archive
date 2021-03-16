@@ -34,7 +34,7 @@ namespace TBA.Common
 
                 JsonSerializerSettings convertSettings = new JsonSerializerSettings() 
                 { 
-                    
+                    // todo: finish?
                 };
                 var rs = JsonConvert.DeserializeObject<RuntimeSettings>(fileContents, new RuntimeSettingsJsonConverter<RuntimeSettings>());
                 _runtimeSettings = rs;

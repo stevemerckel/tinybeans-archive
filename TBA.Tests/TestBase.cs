@@ -1,6 +1,5 @@
 ﻿using System;
 using Moq;
-using NUnit.Framework;
 using TBA.Common;
 
 namespace TBA.Tests
