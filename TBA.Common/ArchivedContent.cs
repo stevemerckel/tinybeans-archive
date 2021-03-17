@@ -67,53 +67,6 @@ namespace TBA.Common
         /// <inheritdoc />
         public bool IsSortOverridePresent => SortOverride != null && SortOverride > -1;
 
-        /// <inheritdoc />
-        public void Download(string destinationLocation)
-        {
-            // Rule: we do *not* try downloading content if the SourceUrl is a local path.
-            //       this situation would likely happen if the class was initialized from a local JSON structure.
-            if (!SourceUrl.StartsWith("http", StringComparison.InvariantCultureIgnoreCase))
-            {
-                // future: can we bring in IAppLogger instance and call its "Debug" method instead?
-                Debug.WriteLine($"The archive {nameof(Id)} of '{Id}' has a local path of '{SourceUrl}', so we are not going to download it.");
-                return;
-            }
-
-            if (File.Exists(destinationLocation))
-                File.Delete(destinationLocation);
-
-            if (ArchiveType == ArchiveType.Text)
-            {
-                File.WriteAllText(destinationLocation, Caption ?? string.Empty);
-                return;
-            }
-
-            if (ArchiveType == ArchiveType.Image || ArchiveType == ArchiveType.Video)
-            {
-                WebClient wc = null;
-                try
-                {
-                    wc = new WebClient();
-                    Debug.WriteLine($"Began download of '{SourceUrl ?? "[NULL]"}' to '{destinationLocation}'");
-                    wc.DownloadFile(SourceUrl, destinationLocation);
-                    Debug.WriteLine($"Finished download of '{SourceUrl ?? "[NULL]"}' to '{destinationLocation}'");
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"{nameof(Exception)} thrown trying to download '{SourceUrl ?? "[NULL]"}' -- details: {ex}");
-                    throw;
-                }
-                finally
-                {
-                    wc?.Dispose();
-                }
-
-                return;
-            }
-
-            throw new NotSupportedException($"Archive type of {ArchiveType} is not yet supported!!");
-        }
-
         private static ArchiveType ConvertArchiveTextToEnum(string type)
         {
             ArchiveType result;

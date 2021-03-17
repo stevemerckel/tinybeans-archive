@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Newtonsoft.Json;
 
 namespace TBA.Common
@@ -104,7 +105,47 @@ namespace TBA.Common
             //                      YYYY-MM-DD-json (daily summary)
             //                      *.[text|image|video]
 
-            throw new NotImplementedException();
+            // write the archives to destination system
+            archives
+                .ForEach(x =>
+                {
+                    var destinationFileLocation = DeterminePathToWriteContent(x, Root);
+                    _logger.Debug($"For archive id '{x.Id}' (type = {x.ArchiveType}), the destination path determined to write the file was this: {destinationFileLocation}");
+                    if (x.ArchiveType == ArchiveType.Text)
+                    {
+                        FileManager.FileWriteText(destinationFileLocation, x.Caption);
+                    }   
+                    else
+                    {
+                        TinybeansApi.Download(x, destinationFileLocation);
+                    }
+                });
+        }
+
+        /// <summary>
+        /// Determines the full file path to write the received archive content
+        /// </summary>
+        /// <param name="archive">The archive to write</param>
+        /// <param name="root">The starting directory</param>
+        /// <returns>The full path to where to write the file</returns>
+        private string DeterminePathToWriteContent(IArchivedContent archive, string root)
+        {
+            var directoryElements = new List<string>
+            {
+                root,
+                archive.JournalId,
+                archive.DisplayedOn.ToString("yyyy"),
+                archive.DisplayedOn.ToString("MM"),
+                archive.DisplayedOn.ToString("dd")
+            };
+
+            var destinationFileName = archive.ArchiveType == ArchiveType.Text
+                ? $"{Guid.NewGuid().ToString("N").Take(8)}.txt"
+                : $"{FileManager.FileGetNameWithoutExtension(archive.SourceUrl)}.{FileManager.FileGetExtension(archive.SourceUrl)}";
+            directoryElements.Add(destinationFileName);
+            var result = string.Empty;
+            directoryElements.ForEach(x => result = FileManager.PathCombine(result, x));
+            return result;
         }
 
         /// <summary>
@@ -113,17 +154,11 @@ namespace TBA.Common
         /// <param name="journalId">The journal ID</param>
         /// <param name="rootDirectory">The root directory for the entire repo</param>
         /// <returns></returns>
-        private List<IArchivedContent> GetArchivesFromLocalFileSystem(long journalId, string rootDirectory)
+        private List<IArchivedContent> GetArchivesFromLocalFileSystem(long journalId)
         {
-            var expectedJournalDirectory = FileManager.PathCombine(rootDirectory, journalId.ToString());
-            if (!FileManager.DirectoryExists(expectedJournalDirectory))
-            {
-                _logger.Error($"The received directory does not exist or is inaccessible!  '{rootDirectory}'");
-                return null;
-            }
-
             // find and parse the monthly json files.
             // note: we only want the YYYY-MM.json files, not the YYYY-MM-DD.json files.
+            var expectedJournalDirectory = FileManager.PathCombine(Root, journalId.ToString());
             const string SearchCriteria = "????-??.json";
             var jsonFiles = FileManager.FileSearch(SearchCriteria, expectedJournalDirectory, true);
             if (!jsonFiles.Any())

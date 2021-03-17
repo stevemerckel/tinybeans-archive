@@ -16,26 +16,27 @@ namespace TBA.Common
         private readonly IRuntimeSettings _runtimeSettings;
         private readonly HttpClient _httpClient;
         private readonly ITinybeansJsonHelper _jsonHelper;
+        private readonly IFileManager _fileManager;
         private readonly WebClient _webClient;
 
         /// <summary>
         /// Default ctor
         /// </summary>
         /// <param name="logger">Logging object</param>
-        public TinybeansApiHelper(IAppLogger logger, IRuntimeSettingsProvider runtimeSettingsProvider, ITinybeansJsonHelper jsonHelper)
+        public TinybeansApiHelper(IAppLogger logger, IRuntimeSettingsProvider runtimeSettingsProvider, ITinybeansJsonHelper jsonHelper, IFileManager fileManager)
         {
-            _logger = logger;
-            if (logger == null)
-                throw new NullReferenceException(nameof(logger));
+            _logger = logger ?? throw new NullReferenceException(nameof(logger));
 
-            _runtimeSettings = runtimeSettingsProvider.GetRuntimeSettings();
-            if (_runtimeSettings == null)
-                throw new NullReferenceException(nameof(_runtimeSettings));
+            if (runtimeSettingsProvider == null)
+                throw new ArgumentNullException(nameof(runtimeSettingsProvider));
+
+            _runtimeSettings = runtimeSettingsProvider.GetRuntimeSettings() ?? throw new NullReferenceException(nameof(runtimeSettingsProvider.GetRuntimeSettings));
 
             // validate runtime settings
             _runtimeSettings.ValidateSettings();
 
             _jsonHelper = jsonHelper;
+            _fileManager = fileManager;
 
             // init http client
             _httpClient = new HttpClient()
@@ -45,28 +46,6 @@ namespace TBA.Common
 
             // init web client
             _webClient = new WebClient();
-        }
-
-        /// <inheritdoc />
-        public bool DownloadFile(string remoteUrl, string localPath)
-        {
-            try
-            {
-                if (File.Exists(localPath))
-                    File.Delete(localPath);
-
-                _webClient.DownloadFile(remoteUrl, localPath);
-            }
-            catch (Exception ex)
-            {
-                var message = ex.ToString();
-                if (ex.InnerException != null)
-                    message += $"{Environment.NewLine}Inner Exception type '{ex.InnerException.GetType()}' -- Details: {ex.InnerException}";
-                _logger.Error(message);
-                return false;
-            }
-
-            return true;
         }
 
         /// <inheritdoc />
@@ -113,6 +92,53 @@ namespace TBA.Common
             }
 
             return _jsonHelper.ParseJournalSummaries(json);
+        }
+
+        /// <inheritdoc />
+        public void Download(IArchivedContent archive, string destinationLocation)
+        {
+            // Rule: we do *not* try downloading content if the SourceUrl is a local path.
+            //       this situation would likely happen if the class was initialized from a local JSON structure.
+            if (!archive.SourceUrl.StartsWith("http", StringComparison.InvariantCultureIgnoreCase))
+            {
+                _logger.Debug($"The archive {nameof(archive.Id)} of '{archive.Id}' has a local path of '{archive.SourceUrl}', so we are not going to download it.");
+                return;
+            }
+
+            if (_fileManager.FileExists(destinationLocation))
+                _fileManager.FileDelete(destinationLocation);
+
+            if (archive.ArchiveType == ArchiveType.Image || archive.ArchiveType == ArchiveType.Video)
+            {
+                WebClient wc = null;
+                try
+                {
+                    wc = new WebClient();
+                    _logger.Debug($"Began download of '{archive.SourceUrl ?? "[NULL]"}' to '{destinationLocation}'");
+                    wc.DownloadFile(archive.SourceUrl, destinationLocation);
+                    _fileManager.FileUnblock(destinationLocation);
+                    _logger.Debug($"Finished download of '{archive.SourceUrl ?? "[NULL]"}' to '{destinationLocation}'");
+                }
+                catch (Exception ex)
+                {
+                    _logger.Debug($"{nameof(Exception)} thrown trying to download '{archive.SourceUrl ?? "[NULL]"}' -- details: {ex}");
+                    throw;
+                }
+                finally
+                {
+                    wc?.Dispose();
+                }
+
+                return;
+            }
+
+            if (archive.ArchiveType == ArchiveType.Text)
+            {
+                _fileManager.FileWriteText(destinationLocation, archive.Caption);
+                return;
+            }
+
+            throw new NotSupportedException($"Archive type of {archive.ArchiveType} is not yet supported!!");
         }
 
         /// <summary>
@@ -186,7 +212,7 @@ namespace TBA.Common
 
             // need to check the inner json "status" field to look for "ok"
             var internalStatus = JObject.Parse(responseString).GetValue("status").ToString();
-            if (internalStatus?.ToLower() != "ok")
+            if (internalStatus?.ToLower().Trim() != "ok")
                 throw new Exception($"Tinybeans API returned a non-ok status code of '{internalStatus ?? "[NULL]"}'");
 
             return responseString;

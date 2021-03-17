@@ -92,5 +92,24 @@ namespace TBA.Common
         /// <param name="includeSubDirs">Whether or not to look through subdirectories from <paramref name="startingPath"/>.  (Default is <c>false</c>.)</param>
         /// <returns></returns>
         string[] FileSearch(string searchPattern, string startingPath, bool includeSubDirs = false);
+
+        /// <summary>
+        /// Returns the character to use for separating directories
+        /// </summary>
+        char DirectorySplit { get; }
+
+        /// <summary>
+        /// Returns a file name of the specified path string without the extension.
+        /// </summary>
+        /// <param name="fileLocation">The path of the file</param>
+        /// <returns>The file name without extension</returns>
+        string FileGetNameWithoutExtension(string fileLocation);
+
+        /// <summary>
+        /// Returns the extension of the specified path string.
+        /// </summary>
+        /// <param name="fileLocation">The path to get the file extension</param>
+        /// <returns>The file extension</returns>
+        string FileGetExtension(string fileLocation);
     }
 }

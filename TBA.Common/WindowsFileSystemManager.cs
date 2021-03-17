@@ -12,6 +12,9 @@ namespace TBA.Common
     public sealed class WindowsFileSystemManager : IFileManager
     {
         /// <inheritdoc />
+        public char DirectorySplit => Path.DirectorySeparatorChar;
+
+        /// <inheritdoc />
         public void FileDelete(string fileLocation)
         {
             if (string.IsNullOrWhiteSpace(fileLocation))
@@ -221,6 +224,24 @@ namespace TBA.Common
             var currentSearchPattern = string.IsNullOrWhiteSpace(searchPattern) ? "*" : searchPattern.Trim();
             var searchOptions = includeSubDirs ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
             return Directory.GetFiles(startingPath, currentSearchPattern, searchOptions);
+        }
+
+        /// <inheritdoc />
+        public string FileGetNameWithoutExtension(string fileLocation)
+        {
+            if (string.IsNullOrWhiteSpace(fileLocation))
+                throw new ArgumentNullException(nameof(fileLocation), "Value cannot be null or empty!");
+
+            return Path.GetFileNameWithoutExtension(fileLocation);
+        }
+
+        /// <inheritdoc />
+        public string FileGetExtension(string fileLocation)
+        {
+            if (string.IsNullOrWhiteSpace(fileLocation))
+                throw new ArgumentNullException(nameof(fileLocation), "Value cannot be null or empty!");
+
+            return Path.GetExtension(fileLocation);
         }
 
         /// <summary>

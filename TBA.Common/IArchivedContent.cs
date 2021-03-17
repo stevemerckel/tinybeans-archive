@@ -47,11 +47,5 @@ namespace TBA.Common
         /// The parent's journal ID
         /// </summary>
         public string JournalId { get; }
-
-        /// <summary>
-        /// Downloads the content to the returned byte array
-        /// </summary>
-        /// <param name="destinationLocation">The location file path to write the content</param>
-        public void Download(string destinationLocation);
     }
 }
