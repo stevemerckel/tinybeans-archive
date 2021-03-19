@@ -162,6 +162,62 @@ namespace TBA.Common
             return Directory.GetDirectories(path, searchPattern, myOption);
         }
 
+        /// <inheritdoc />
+        public string PathCombine(string first, string second)
+        {
+            return Path.Combine(first, second);
+        }
+
+        /// <inheritdoc />
+        public string[] FileSearch(string searchPattern, string startingPath, bool includeSubDirs = false)
+        {
+            if (string.IsNullOrWhiteSpace(startingPath))
+                throw new ArgumentNullException($"{nameof(startingPath)} is required !!");
+
+            if (!DirectoryExists(startingPath))
+                throw new DirectoryNotFoundException($"Directory '{startingPath}' does not exist or is inaccessible !!");
+
+            var currentSearchPattern = string.IsNullOrWhiteSpace(searchPattern) ? "*" : searchPattern.Trim();
+            var searchOptions = includeSubDirs ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+            return Directory.GetFiles(startingPath, currentSearchPattern, searchOptions);
+        }
+
+        /// <inheritdoc />
+        public string FileGetNameWithoutExtension(string fileLocation)
+        {
+            if (string.IsNullOrWhiteSpace(fileLocation))
+                throw new ArgumentNullException(nameof(fileLocation), "Value cannot be null or empty!");
+
+            return Path.GetFileNameWithoutExtension(fileLocation);
+        }
+
+        /// <inheritdoc />
+        public string FileGetExtension(string fileLocation)
+        {
+            if (string.IsNullOrWhiteSpace(fileLocation))
+                throw new ArgumentNullException(nameof(fileLocation), "Value cannot be null or empty!");
+
+            return Path.GetExtension(fileLocation);
+        }
+
+        /// <inheritdoc />
+        public string DirectoryGetName(string path)
+        {
+            return Path.GetDirectoryName(path);
+        }
+
+        /// <summary>
+        /// Returns a hexadecimal string representation of the byte array.
+        /// </summary>
+        /// <param name="bits">The byte array</param>
+        /// <returns>Hexadecimal string</returns>
+        private static string MakeHexString(byte[] bits)
+        {
+            var sb = new StringBuilder(bits.Length * 2); // pre-fill the size to prevent potential re-allocation of memory from dynamic re-sizing of the object
+            bits.ToList().ForEach(x => sb.Append(x.ToString("X2")));
+            return sb.ToString();
+        }
+
         /// <summary>
         /// Looks at the received file path (which may not yet exist!) and tests whether the folder structure exists.  If not, then it tries to create the folder structure.
         /// </summary>
@@ -204,56 +260,6 @@ namespace TBA.Common
                 CreateDirectory(makeMe);
                 Thread.Sleep(2);
             }
-        }
-
-        /// <inheritdoc />
-        public string PathCombine(string first, string second)
-        {
-            return Path.Combine(first, second);
-        }
-
-        /// <inheritdoc />
-        public string[] FileSearch(string searchPattern, string startingPath, bool includeSubDirs = false)
-        {
-            if (string.IsNullOrWhiteSpace(startingPath))
-                throw new ArgumentNullException($"{nameof(startingPath)} is required !!");
-
-            if (!DirectoryExists(startingPath))
-                throw new DirectoryNotFoundException($"Directory '{startingPath}' does not exist or is inaccessible !!");
-
-            var currentSearchPattern = string.IsNullOrWhiteSpace(searchPattern) ? "*" : searchPattern.Trim();
-            var searchOptions = includeSubDirs ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-            return Directory.GetFiles(startingPath, currentSearchPattern, searchOptions);
-        }
-
-        /// <inheritdoc />
-        public string FileGetNameWithoutExtension(string fileLocation)
-        {
-            if (string.IsNullOrWhiteSpace(fileLocation))
-                throw new ArgumentNullException(nameof(fileLocation), "Value cannot be null or empty!");
-
-            return Path.GetFileNameWithoutExtension(fileLocation);
-        }
-
-        /// <inheritdoc />
-        public string FileGetExtension(string fileLocation)
-        {
-            if (string.IsNullOrWhiteSpace(fileLocation))
-                throw new ArgumentNullException(nameof(fileLocation), "Value cannot be null or empty!");
-
-            return Path.GetExtension(fileLocation);
-        }
-
-        /// <summary>
-        /// Returns a hexadecimal string representation of the byte array.
-        /// </summary>
-        /// <param name="bits">The byte array</param>
-        /// <returns>Hexadecimal string</returns>
-        private static string MakeHexString(byte[] bits)
-        {
-            var sb = new StringBuilder(bits.Length * 2); // pre-fill the size to prevent potential re-allocation of memory from dynamic re-sizing of the object
-            bits.ToList().ForEach(x => sb.Append(x.ToString("X2")));
-            return sb.ToString();
         }
     }
 }

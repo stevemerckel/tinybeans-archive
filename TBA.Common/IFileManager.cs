@@ -111,5 +111,14 @@ namespace TBA.Common
         /// <param name="fileLocation">The path to get the file extension</param>
         /// <returns>The file extension</returns>
         string FileGetExtension(string fileLocation);
+
+        /// <summary>
+        /// <para>Returns the parent directory path.</para>
+        /// <para>If no info is available, returns <c>string.Empty</c></para>
+        /// <para>If path is a root directory, returns <c>null</c></para>
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        string DirectoryGetName(string path);
     }
 }

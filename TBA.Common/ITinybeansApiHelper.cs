@@ -9,7 +9,7 @@ namespace TBA.Common
     public interface ITinybeansApiHelper
     {
         /// <summary>
-        /// Returns a list of journal ID(s) from the API
+        /// Returns summary information about each journal from the API
         /// </summary>
         /// <returns>List of Journal ID(s)</returns>
         List<JournalSummary> GetJournalSummaries();

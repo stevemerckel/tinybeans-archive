@@ -6,7 +6,7 @@ namespace TBA.Common
     /// <summary>
     /// Manages logic for writing journal archives to the file system
     /// </summary>
-    public interface IJournalManager
+    public interface IJournalManager : ITinybeansApiHelper
     {
         /// <summary>
         /// Writes the received archives to the file system

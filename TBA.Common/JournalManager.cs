@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
 
 namespace TBA.Common
@@ -42,6 +41,12 @@ namespace TBA.Common
 
         /// <inheritdoc />
         public string Root { get; private set; }
+
+        /// <inheritdoc />
+        public void Download(IArchivedContent content, string destinationLocation)
+        {
+            TinybeansApi.Download(content, destinationLocation);
+        }
 
         /// <inheritdoc />
         public List<DateTime> FindDatesWithRecentChanges(string journalId)
@@ -90,9 +95,27 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
+        public List<IArchivedContent> GetByDate(DateTime date, long journalId)
+        {
+            return TinybeansApi.GetByDate(date, journalId);
+        }
+
+        /// <inheritdoc />
+        public List<IArchivedContent> GetEntriesByYearMonth(DateTime yearMonth, long journalId)
+        {
+            return TinybeansApi.GetEntriesByYearMonth(yearMonth, journalId);
+        }
+
+        /// <inheritdoc />
+        public List<JournalSummary> GetJournalSummaries()
+        {
+            return TinybeansApi.GetJournalSummaries();
+        }
+
+        /// <inheritdoc />
         public void WriteArchivesToFileSystem(List<IArchivedContent> archives)
         {
-            if (FileManager.DirectoryExists(Root))
+            if (!FileManager.DirectoryExists(Root))
                 throw new Exception($"Cannot find root directory!  Tried looking here: '{Root}'");
 
             // pathing logic:
@@ -141,7 +164,7 @@ namespace TBA.Common
 
             var destinationFileName = archive.ArchiveType == ArchiveType.Text
                 ? $"{Guid.NewGuid().ToString("N").Take(8)}.txt"
-                : $"{FileManager.FileGetNameWithoutExtension(archive.SourceUrl)}.{FileManager.FileGetExtension(archive.SourceUrl)}";
+                : $"{FileManager.FileGetNameWithoutExtension(archive.SourceUrl)}{FileManager.FileGetExtension(archive.SourceUrl)}";
             directoryElements.Add(destinationFileName);
             var result = string.Empty;
             directoryElements.ForEach(x => result = FileManager.PathCombine(result, x));

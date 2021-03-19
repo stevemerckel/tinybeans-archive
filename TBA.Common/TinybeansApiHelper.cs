@@ -115,6 +115,7 @@ namespace TBA.Common
                 {
                     wc = new WebClient();
                     _logger.Debug($"Began download of '{archive.SourceUrl ?? "[NULL]"}' to '{destinationLocation}'");
+                    _fileManager.CreateDirectory(_fileManager.DirectoryGetName(destinationLocation));
                     wc.DownloadFile(archive.SourceUrl, destinationLocation);
                     _fileManager.FileUnblock(destinationLocation);
                     _logger.Debug($"Finished download of '{archive.SourceUrl ?? "[NULL]"}' to '{destinationLocation}'");

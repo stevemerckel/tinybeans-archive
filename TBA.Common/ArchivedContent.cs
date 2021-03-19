@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
-using System.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -16,6 +14,9 @@ namespace TBA.Common
         public ArchivedContent(long id, string type, int year, int month, int day, JObject blobs, long journalId, string caption, int sortOrder = -1)
             : this(id.ToString(), new DateTime(year, month, day), ConvertArchiveTextToEnum(type), caption, journalId.ToString(), sortOrder, null)
         {
+            // from the JObject, grab the "o" entry as that is the "original" file upload
+            var sourceUrl = (string)blobs["o"];
+            SourceUrl = ArchiveType == ArchiveType.Text ? null : sourceUrl?.Trim();
         }
 
         /// <summary>
