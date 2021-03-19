@@ -115,6 +115,12 @@ namespace TBA.Common
         /// <inheritdoc />
         public void WriteArchivesToFileSystem(List<IArchivedContent> archives)
         {
+            if (archives == null || !archives.Any())
+            {
+                _logger.Debug("No entries received!  Exiting method.");
+                return;
+            }
+
             if (!FileManager.DirectoryExists(Root))
                 throw new Exception($"Cannot find root directory!  Tried looking here: '{Root}'");
 
@@ -129,20 +135,60 @@ namespace TBA.Common
             //                      *.[text|image|video]
 
             // write the archives to destination system
+            var localPathDictionary = new Dictionary<string, string>(archives.Count);
             archives
                 .ForEach(x =>
                 {
-                    var destinationFileLocation = DeterminePathToWriteContent(x, Root);
+                    var destinationFileLocation = DeterminePathToWriteArchiveContent(x, Root);
                     _logger.Debug($"For archive id '{x.Id}' (type = {x.ArchiveType}), the destination path determined to write the file was this: {destinationFileLocation}");
                     if (x.ArchiveType == ArchiveType.Text)
                     {
                         FileManager.FileWriteText(destinationFileLocation, x.Caption);
-                    }   
+                    }
                     else
                     {
                         TinybeansApi.Download(x, destinationFileLocation);
                     }
+
+                    localPathDictionary.Add(x.Id, destinationFileLocation);
                 });
+
+            // write JSON metadata to file system
+
+            // determine min/max of range
+            // set year-month tracker variable for day "1" of min
+            var minDate = archives.Min(x => x.DisplayedOn);
+            var maxDate = archives.Max(x => x.DisplayedOn);
+            var currentYearMonth = new DateTime(minDate.Year, minDate.Month, 1); // first day of the "start" year-month
+            do
+            {
+                // fetch pool of archives for current year-month
+                var monthArchives = archives
+                    .Where(x => x.DisplayedOn.Date >= currentYearMonth.Date && x.DisplayedOn.Date < currentYearMonth.AddMonths(1).Date)
+                    .OrderBy(x => x.DisplayedOn)
+                    .ThenBy(x => x.SortOverride)
+                    .ToList();
+
+                if (monthArchives.Any())
+                {
+                    // todo: write the month's summary JSON
+
+                    // todo: write each day within the month's summary JSON
+                    var daysToWrite = monthArchives.Select(x => x.DisplayedOn.Date).Distinct();
+                    foreach (var day in daysToWrite)
+                    {
+                        monthArchives
+                            .Where(x => x.DisplayedOn.Date == day)
+                            .OrderBy(x => x.SortOverride)
+                            .ToList()
+                            .ForEach(x => _logger.Debug($"For id '{x.Id}' we matched to file here: {localPathDictionary[x.Id]}"));
+                    }
+                }
+
+                // add a month to "current" tracker
+                currentYearMonth = currentYearMonth.AddMonths(1);
+            }
+            while (currentYearMonth <= maxDate.Date);
         }
 
         /// <summary>
@@ -151,7 +197,7 @@ namespace TBA.Common
         /// <param name="archive">The archive to write</param>
         /// <param name="root">The starting directory</param>
         /// <returns>The full path to where to write the file</returns>
-        private string DeterminePathToWriteContent(IArchivedContent archive, string root)
+        private string DeterminePathToWriteArchiveContent(IArchivedContent archive, string root)
         {
             var directoryElements = new List<string>
             {
@@ -163,7 +209,7 @@ namespace TBA.Common
             };
 
             var destinationFileName = archive.ArchiveType == ArchiveType.Text
-                ? $"{Guid.NewGuid().ToString("N").Take(8)}.txt"
+                ? $"{Guid.NewGuid().ToString("D")}.txt"
                 : $"{FileManager.FileGetNameWithoutExtension(archive.SourceUrl)}{FileManager.FileGetExtension(archive.SourceUrl)}";
             directoryElements.Add(destinationFileName);
             var result = string.Empty;
