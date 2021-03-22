@@ -134,6 +134,17 @@ namespace TBA.Common
             //                      YYYY-MM-DD-json (daily summary)
             //                      *.[text|image|video]
 
+            //
+            // General Notes:
+            //      Copy img/vid/txt files to disk first.  If that fails mid-stream, then recover/restart is easy.
+            //      Then copy JSON files to disk.
+            //          Start with monthly JSON summary.
+            //              If a monthly fails, then detect/replace is minimal effort with file count of found vs expected.
+            //          Then do daily within the month.
+            //              If a daily fails, then detect/replace is minimal effort with file count of found vs expected.
+            //          Then move on to next month, rinse-repeat.
+            //
+
             // write the archives to destination system
             var localPathDictionary = new Dictionary<string, string>(archives.Count);
             archives
