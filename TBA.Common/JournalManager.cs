@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace TBA.Common
@@ -11,6 +13,7 @@ namespace TBA.Common
     public sealed class JournalManager : IJournalManager
     {
         private readonly IAppLogger _logger;
+        const double TargetThreadCount = 4; // todo: refactor to pull at runtime
 
         /// <summary>
         /// Default ctor
@@ -147,22 +150,74 @@ namespace TBA.Common
 
             // write the archives to destination system
             var localPathDictionary = new Dictionary<string, string>(archives.Count);
-            archives
-                .ForEach(x =>
+            var downloadBehavior = new Func<IArchivedContent, Tuple<string, string>>((archive) =>
+            {
+                var destinationFileLocation = DeterminePathToWriteArchiveContent(archive, Root);
+                _logger.Debug($"For archive id '{archive.Id}' (type = {archive.ArchiveType}), the destination path determined to write the file was this: {destinationFileLocation}");
+                if (archive.ArchiveType == ArchiveType.Text)
                 {
-                    var destinationFileLocation = DeterminePathToWriteArchiveContent(x, Root);
-                    _logger.Debug($"For archive id '{x.Id}' (type = {x.ArchiveType}), the destination path determined to write the file was this: {destinationFileLocation}");
-                    if (x.ArchiveType == ArchiveType.Text)
-                    {
-                        FileManager.FileWriteText(destinationFileLocation, x.Caption);
-                    }
-                    else
-                    {
-                        TinybeansApi.Download(x, destinationFileLocation);
-                    }
+                    FileManager.FileWriteText(destinationFileLocation, archive.Caption);
+                }
+                else
+                {
+                    TinybeansApi.Download(archive, destinationFileLocation);
+                }
 
-                    localPathDictionary.Add(x.Id, destinationFileLocation);
-                });
+                return new Tuple<string, string>(archive.Id, destinationFileLocation);
+            });
+
+            var sw = new Stopwatch();
+            sw.Start();
+            if (TargetThreadCount < 2)
+            {
+                // process serially
+                foreach (var a in archives)
+                {
+                    var result = downloadBehavior.Invoke(a);
+                    localPathDictionary.Add(result.Item1, result.Item2);
+                }
+            }
+            else
+            {
+                // multithread the workload
+                var poolSize = (int)Math.Ceiling(archives.Count / TargetThreadCount);
+                var groups = SplitList(archives, poolSize);
+                var threads = new List<Task>();
+                foreach (var g in groups)
+                {
+                    threads.Add(new Task(() =>
+                    {
+                        g.ForEach(x =>
+                        {
+                            var result = downloadBehavior.Invoke(x);
+                            localPathDictionary.Add(result.Item1, result.Item2);
+                        });
+                    }));
+                }
+                threads.ForEach(x => x.Start());
+                Task.WaitAll(threads.ToArray());
+            }
+            sw.Stop();
+            _logger.Debug($"Processing time for {archives.Count} items using {TargetThreadCount} threads was {sw.ElapsedMilliseconds} ms");
+            Debugger.Break();
+
+
+            //archives
+            //    .ForEach(x =>
+            //    {
+            //        var destinationFileLocation = DeterminePathToWriteArchiveContent(x, Root);
+            //        _logger.Debug($"For archive id '{x.Id}' (type = {x.ArchiveType}), the destination path determined to write the file was this: {destinationFileLocation}");
+            //        if (x.ArchiveType == ArchiveType.Text)
+            //        {
+            //            FileManager.FileWriteText(destinationFileLocation, x.Caption);
+            //        }
+            //        else
+            //        {
+            //            TinybeansApi.Download(x, destinationFileLocation);
+            //        }
+
+            //        localPathDictionary.Add(x.Id, destinationFileLocation);
+            //    });
 
             // write JSON metadata to file system
 
@@ -226,6 +281,27 @@ namespace TBA.Common
             var result = string.Empty;
             directoryElements.ForEach(x => result = FileManager.PathCombine(result, x));
             return result;
+        }
+
+        /// <summary>
+        /// Splits a pool of objects into sub-pools, with each pool containing up to the specified number of elements allowed.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="pool">The pool to split by <paramref name="size"/></param>
+        /// <param name="size">The size of each group to create out of the entire <paramref name="pool"/> of content</param>
+        /// <remarks>Found on SO: https://stackoverflow.com/questions/11463734/split-a-list-into-smaller-lists-of-n-size</remarks>
+        private static IEnumerable<List<T>> SplitList<T>(List<T> pool, int size)
+        {
+            if (size < 1)
+                throw new ArgumentOutOfRangeException($"{nameof(size)} must be greater than zero!");
+
+            if (pool.Count <= size)
+                yield return pool;
+
+            for (int i = 0; i < pool.Count; i += size)
+            {
+                yield return pool.GetRange(i, Math.Min(size, pool.Count - i));
+            }
         }
 
         /// <summary>
