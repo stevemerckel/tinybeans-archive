@@ -13,7 +13,7 @@ namespace TBA.Common
     public sealed class JournalManager : IJournalManager
     {
         private readonly IAppLogger _logger;
-        const double TargetThreadCount = 4; // todo: refactor to pull at runtime
+        const double TargetThreadCount = 8; // todo: refactor to pull at runtime
 
         /// <summary>
         /// Default ctor
