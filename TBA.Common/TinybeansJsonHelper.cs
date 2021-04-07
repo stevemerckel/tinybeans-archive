@@ -31,12 +31,16 @@ namespace TBA.Common
             foreach (var e in (JArray)content["entries"])
             {
                 var id = (int)e["id"];
+                var year = (int)e["year"];
+                var month = (int)e["month"];
+                var day = (int)e["year"];
+                var targetDate = new DateTime(year, month, day, 1, 1, 1, DateTimeKind.Local);
 
                 // ensure this is not deleted -- skip it if it was deleted.
                 var isDeleted = (bool)e["deleted"];
                 if (isDeleted)
                 {
-                    _logger.Info($"Skipping content id '{id}' because it was deleted.");
+                    _logger.Warn($"Skipping content id '{id}' (on {targetDate.ToString("yyyy-MM-dd")}) because it was flagged as deleted by Tinybeans.");
                     continue;
                 }
 
@@ -48,7 +52,7 @@ namespace TBA.Common
 
                 if (isEncodeFailed)
                 {
-                    _logger.Info($"Skipping content id '{id}' because it's video encode failed.");
+                    _logger.Warn($"Skipping content id '{id}' (on {targetDate.ToString("yyyy-MM-dd")}) because it's video encode failed at Tinybeans.");
                     continue;
                 }
 
