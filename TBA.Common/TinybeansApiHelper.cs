@@ -49,7 +49,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public List<IArchivedContent> GetByDate(DateTime date, long journalId)
+        public List<ITinybeansArchivedContent> GetByDate(DateTime date, long journalId)
         {
             _logger.Info($"Fetching day info for journal ID '{journalId}' for date '{date.ToString("MM/dd/yyyy")}'");
 
@@ -65,7 +65,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public List<IArchivedContent> GetEntriesByYearMonth(DateTime yearMonth, long journalId)
+        public List<ITinybeansArchivedContent> GetEntriesByYearMonth(DateTime yearMonth, long journalId)
         {
             _logger.Info($"Fetching month info for journal ID '{journalId}' for date '{yearMonth.ToString("MMMM yyyy")}'");
 
@@ -95,7 +95,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public void Download(IArchivedContent archive, string destinationLocation)
+        public void Download(ITinybeansArchivedContent archive, string destinationLocation)
         {
             // Rule: we do *not* try downloading content if the SourceUrl is a local path.
             //       this situation would likely happen if the class was initialized from a local JSON structure.

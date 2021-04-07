@@ -5,7 +5,7 @@ namespace TBA.Common
     /// <summary>
     /// General contract shared across all archived content
     /// </summary>
-    public interface IArchivedContent
+    public interface ITinybeansArchivedContent
     {
         /// <summary>
         /// The unique id for this archive entry
@@ -36,6 +36,16 @@ namespace TBA.Common
         /// URL to fetch the resource
         /// </summary>
         public string SourceUrl { get; }
+
+        /// <summary>
+        /// Url to fetch the rectangle-dimensioned thumbnail -- note this could mean it is oriented tall or wide.
+        /// </summary>
+        public string ThumbnailUrlRectangle { get; }
+
+        /// <summary>
+        /// Url to fetch the square-dimensioned thumbnail.
+        /// </summary>
+        public string ThumbnailUrlSquare { get; }
 
         /// <summary>
         /// The optional text caption for the content

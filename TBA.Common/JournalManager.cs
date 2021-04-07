@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -46,7 +48,7 @@ namespace TBA.Common
         public string Root { get; private set; }
 
         /// <inheritdoc />
-        public void Download(IArchivedContent content, string destinationLocation)
+        public void Download(ITinybeansArchivedContent content, string destinationLocation)
         {
             TinybeansApi.Download(content, destinationLocation);
         }
@@ -64,7 +66,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public List<IArchivedContent> GetArchives(string journalId, DateTime start, DateTime end)
+        public List<ITinybeansArchivedContent> GetArchives(string journalId, DateTime start, DateTime end)
         {
             if (string.IsNullOrWhiteSpace(journalId))
                 throw new ArgumentException("Journal ID cannot be null/empty/whitespace !!");
@@ -76,7 +78,7 @@ namespace TBA.Common
                 throw new ArgumentException($"The value '{journalId}' cannot be parsed to {nameof(Int64)} !!");
 
             // fetch the wider pool
-            var pool = new List<IArchivedContent>(512); // init to a large net to avoid early expansions of List<T>
+            var pool = new List<ITinybeansArchivedContent>(512); // init to a large net to avoid early expansions of List<T>
             var currentYearMonth = new DateTime(start.Year, start.Month, 1); // first day of the "start" year-month
             do
             {
@@ -98,13 +100,13 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public List<IArchivedContent> GetByDate(DateTime date, long journalId)
+        public List<ITinybeansArchivedContent> GetByDate(DateTime date, long journalId)
         {
             return TinybeansApi.GetByDate(date, journalId);
         }
 
         /// <inheritdoc />
-        public List<IArchivedContent> GetEntriesByYearMonth(DateTime yearMonth, long journalId)
+        public List<ITinybeansArchivedContent> GetEntriesByYearMonth(DateTime yearMonth, long journalId)
         {
             return TinybeansApi.GetEntriesByYearMonth(yearMonth, journalId);
         }
@@ -116,7 +118,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public void WriteArchivesToFileSystem(List<IArchivedContent> archives)
+        public void WriteArchivesToFileSystem(List<ITinybeansArchivedContent> archives)
         {
             if (archives == null || !archives.Any())
             {
@@ -150,7 +152,7 @@ namespace TBA.Common
 
             // write the archives to destination system
             var localPathDictionary = new Dictionary<string, string>(archives.Count);
-            var downloadBehavior = new Func<IArchivedContent, Tuple<string, string>>((archive) =>
+            var downloadBehavior = new Func<ITinybeansArchivedContent, Tuple<string, string>>((archive) =>
             {
                 var destinationFileLocation = DeterminePathToWriteArchiveContent(archive, Root);
                 _logger.Debug($"For archive id '{archive.Id}' (type = {archive.ArchiveType}), the destination path determined to write the file was this: {destinationFileLocation}");
@@ -185,20 +187,62 @@ namespace TBA.Common
                 var threads = new List<Task>();
                 foreach (var g in groups)
                 {
-                    threads.Add(new Task(() =>
+                    var task = new Task(() =>
                     {
+                        const int DelayInMs = 5000;
+                        const int MaxAttemptCount = 3;
+
                         g.ForEach(x =>
                         {
-                            var result = downloadBehavior.Invoke(x);
-                            localPathDictionary.Add(result.Item1, result.Item2);
+                            var isProcessed = false;
+                            for (var i = 0; i < MaxAttemptCount; i++)
+                            {
+                                if (isProcessed)
+                                    break;
+
+                                try
+                                {
+                                    var result = downloadBehavior.Invoke(x);
+                                    localPathDictionary.Add(result.Item1, result.Item2);
+                                    isProcessed = true;
+                                }
+                                catch (WebException webEx)
+                                {
+                                    var msg = webEx.ToString();
+                                    if (webEx.InnerException != null)
+                                        msg += $"{Environment.NewLine}*** INNER EXCEPTION *** -- {webEx.InnerException}";
+                                    _logger.Error($"{nameof(WebException)} thrown trying to download file '{x.SourceUrl}' for date {x.DisplayedOn.ToString("yyyy-MM-dd")} -- Details: {webEx}");
+                                }
+                                catch (Exception ex)
+                                {
+                                    var msg = ex.ToString();
+                                    if (ex.InnerException != null)
+                                        msg += $"{Environment.NewLine}*** INNER EXCEPTION *** -- {ex.InnerException}";
+                                    _logger.Error($"{nameof(Exception)} thrown trying to download file '{x.SourceUrl}' for date {x.DisplayedOn.ToString("yyyy-MM-dd")} -- Details: {ex}");
+                                }
+
+                                if (!isProcessed)
+                                {
+                                    var totalDelayInMs = (i * DelayInMs) + DelayInMs;
+                                    _logger.Warn($"Failed attempt #{i + 1} at downloading '{x.SourceUrl}'.  Going to wait {totalDelayInMs} milliseconds and try again.");
+                                    Thread.Sleep(totalDelayInMs);
+                                }
+                            }
+
+                            if (!isProcessed)
+                                _logger.Error($"Failed to download '{x.SourceUrl}' after {MaxAttemptCount} attempts.");
                         });
-                    }));
+                    }
+                    , TaskCreationOptions.LongRunning);
+
+                    threads.Add(task);
                 }
                 threads.ForEach(x => x.Start());
                 Task.WaitAll(threads.ToArray());
             }
+
             sw.Stop();
-            _logger.Debug($"Processing time for {archives.Count} items using {TargetThreadCount} threads was {sw.ElapsedMilliseconds} ms");
+            _logger.Info($"Processing time for {archives.Count} items using {TargetThreadCount} threads was {sw.ElapsedMilliseconds} ms");
             Debugger.Break();
 
 
@@ -263,7 +307,7 @@ namespace TBA.Common
         /// <param name="archive">The archive to write</param>
         /// <param name="root">The starting directory</param>
         /// <returns>The full path to where to write the file</returns>
-        private string DeterminePathToWriteArchiveContent(IArchivedContent archive, string root)
+        private string DeterminePathToWriteArchiveContent(ITinybeansArchivedContent archive, string root)
         {
             var directoryElements = new List<string>
             {
@@ -310,7 +354,7 @@ namespace TBA.Common
         /// <param name="journalId">The journal ID</param>
         /// <param name="rootDirectory">The root directory for the entire repo</param>
         /// <returns></returns>
-        private List<IArchivedContent> GetArchivesFromLocalFileSystem(long journalId)
+        private List<ITinybeansArchivedContent> GetArchivesFromLocalFileSystem(long journalId)
         {
             // find and parse the monthly json files.
             // note: we only want the YYYY-MM.json files, not the YYYY-MM-DD.json files.
@@ -324,7 +368,7 @@ namespace TBA.Common
             }
 
             // parse json content into POCOs
-            var archives = new List<IArchivedContent>(jsonFiles.Count() * 2); // hack: init with a wide net by assuming 2 content entries per JSON file
+            var archives = new List<ITinybeansArchivedContent>(jsonFiles.Count() * 2); // hack: init with a wide net by assuming 2 content entries per JSON file
             var fileProcessedCount = 0;
             try
             {
@@ -337,7 +381,7 @@ namespace TBA.Common
                         continue;
                     }
 
-                    archives.Add(JsonConvert.DeserializeObject<ArchivedContent>(content));
+                    archives.Add(JsonConvert.DeserializeObject<TinybeansArchivedContent>(content));
                     fileProcessedCount++;
                 }
             }

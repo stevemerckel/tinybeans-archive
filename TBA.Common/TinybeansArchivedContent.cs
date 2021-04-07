@@ -8,15 +8,43 @@ namespace TBA.Common
     /// <summary>
     /// Container class for all content journaled at Tinybeans
     /// </summary>
-    public class ArchivedContent : IArchivedContent
+    public class TinybeansArchivedContent : ITinybeansArchivedContent
     {
         [JsonConstructor]
-        public ArchivedContent(long id, string type, int year, int month, int day, JObject blobs, long journalId, string caption, int sortOrder = -1)
-            : this(id.ToString(), new DateTime(year, month, day), ConvertArchiveTextToEnum(type), caption, journalId.ToString(), sortOrder, null)
+        public TinybeansArchivedContent(long id, string type, int year, int month, int day, JObject blobs, long journalId, string caption, string attachmentType, string attachmentUrl, int sortOrder = -1)
+            : this(id.ToString(), new DateTime(year, month, day), ConvertArchiveTextToEnum(type, attachmentType), caption, journalId.ToString(), sortOrder, null)
         {
-            // from the JObject, grab the "o" entry as that is the "original" file upload
-            var sourceUrl = (string)blobs["o"];
-            SourceUrl = ArchiveType == ArchiveType.Text ? null : sourceUrl?.Trim();
+            if (ArchiveType == ArchiveType.Text)
+                return; // nothing extra to do
+
+            if (ArchiveType == ArchiveType.Image)
+            {
+                // from the JObject, grab the "o" entry as that is the "original" file upload
+                SourceUrl = ((string)blobs["o"]).Trim();
+                ThumbnailUrlRectangle = ((string)blobs["t"]).Trim();
+                ThumbnailUrlSquare = ((string)blobs["o2"]).Trim();
+
+                if (string.IsNullOrWhiteSpace(SourceUrl))
+                    throw new ArgumentException($"Unsure how to handle an archive type of {Enum.GetName(typeof(ArchiveType), ArchiveType)} that is missing a value for {nameof(SourceUrl)} !!");
+
+                return;
+            }
+
+            if (ArchiveType == ArchiveType.Video)
+            {
+                if (string.IsNullOrWhiteSpace(attachmentUrl))
+                    throw new ArgumentException($"Unsure how to handle an archive type of {Enum.GetName(typeof(ArchiveType), ArchiveType)} that is missing a value for {nameof(attachmentUrl)} !!");
+
+                // use the "attachmentUrl" property as the source url
+                // then grab "t" as the scaled thumbnail and "o2" as the square-ish thumbnail
+                SourceUrl = attachmentUrl.Trim();
+                ThumbnailUrlRectangle = ((string)blobs["t"]).Trim();
+                ThumbnailUrlSquare = ((string)blobs["o2"]).Trim();
+
+                return;
+            }
+
+            throw new ArgumentException($"Received an unknown archive type of {Enum.GetName(typeof(ArchiveType), ArchiveType)} !!");
         }
 
         /// <summary>
@@ -29,7 +57,7 @@ namespace TBA.Common
         /// <param name="journalId">The journal Id this entry belongs to</param>
         /// <param name="sortOrder">The optional sort order for showing an item on the page</param>
         /// <param name="sourceUrl">The source URL for the file -- not used for type <seealso cref="ArchiveType.Text"/></param>
-        public ArchivedContent(string id, DateTime displayedOn, ArchiveType type, string caption, string journalId, int sortOrder = -1, string sourceUrl = null)
+        public TinybeansArchivedContent(string id, DateTime displayedOn, ArchiveType type, string caption, string journalId, int sortOrder = -1, string sourceUrl = null)
         {
             Id = id;
             DisplayedOn = displayedOn;
@@ -68,10 +96,18 @@ namespace TBA.Common
         /// <inheritdoc />
         public bool IsSortOverridePresent => SortOverride != null && SortOverride > -1;
 
-        private static ArchiveType ConvertArchiveTextToEnum(string type)
+        /// <inheritdoc />
+        public string ThumbnailUrlRectangle { get; set; }
+
+        /// <inheritdoc />
+        public string ThumbnailUrlSquare { get; set; }
+
+        private static ArchiveType ConvertArchiveTextToEnum(string type, string attachmentType)
         {
+            var valueToConsider = string.IsNullOrWhiteSpace(attachmentType) ? type : attachmentType;
+
             ArchiveType result;
-            switch (type?.ToUpper())
+            switch (valueToConsider?.Trim().ToUpper())
             {
                 case "PHOTO":
                     result = ArchiveType.Image;
@@ -93,12 +129,12 @@ namespace TBA.Common
         /// Reads in a JSON string, and returns the initialized POCO object
         /// </summary>
         /// <param name="json"></param>
-        public static IArchivedContent FromInternalJson(string json)
+        public static ITinybeansArchivedContent FromInternalJson(string json)
         {
-            ArchivedContent result = null;
+            TinybeansArchivedContent result = null;
             try
             {
-                result = JsonConvert.DeserializeObject<ArchivedContent>(json);
+                result = JsonConvert.DeserializeObject<TinybeansArchivedContent>(json);
             }
             catch (Exception ex)
             {

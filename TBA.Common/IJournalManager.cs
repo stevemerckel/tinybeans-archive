@@ -12,7 +12,7 @@ namespace TBA.Common
         /// Writes the received archives to the file system
         /// </summary>
         /// <param name="archives">The archives to write</param>
-        void WriteArchivesToFileSystem(List<IArchivedContent> archives);
+        void WriteArchivesToFileSystem(List<ITinybeansArchivedContent> archives);
 
         /// <summary>
         /// Looks for dates at the Tinybeans API having at least one change compared to the local copy
@@ -27,7 +27,7 @@ namespace TBA.Common
         /// <param name="start">The inclusive start -- only the <see cref="DateTime.Date"/> property is considered, and assumes "midnight" of the date.</param>
         /// <param name="end">The inclusive end -- only the <see cref="DateTime.Date"/> property is considered, and will go through the entire day</param>
         /// <returns>List of all archives found within the range</returns>
-        List<IArchivedContent> GetArchives(string journalId, DateTime start, DateTime end);
+        List<ITinybeansArchivedContent> GetArchives(string journalId, DateTime start, DateTime end);
 
         /// <summary>
         /// Get the instance of the <see cref="IFileManager"/> object

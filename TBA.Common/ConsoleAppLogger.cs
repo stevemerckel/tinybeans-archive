@@ -39,7 +39,12 @@ namespace TBA.Common
 
         private void Write(string level, string message)
         {
-            Console.WriteLine($"[{level}]  {message}");
+            var writeMe = $"[{level}]  {message}";
+            Console.WriteLine(writeMe);
+
+            // if IDE is attached, then also send to dbg stream for ease of viewing in IDE debugger output
+            if (System.Diagnostics.Debugger.IsAttached)
+                System.Diagnostics.Debug.WriteLine(writeMe);
         }
     }
 }

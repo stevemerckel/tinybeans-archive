@@ -14,9 +14,9 @@ namespace TBA.Common
         List<JournalSummary> ParseJournalSummaries(string json);
 
         /// <summary>
-        /// Builds a collection of <see cref="ArchivedContent"/> objects based on the received JSON content
+        /// Builds a collection of <see cref="TinybeansArchivedContent"/> objects based on the received JSON content
         /// </summary>
         /// <param name="json">JSON content</param>
-        List<IArchivedContent> ParseArchivedContent(string json);
+        List<ITinybeansArchivedContent> ParseArchivedContent(string json);
     }
 }

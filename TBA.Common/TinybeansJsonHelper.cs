@@ -21,29 +21,40 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public List<IArchivedContent> ParseArchivedContent(string json)
+        public List<ITinybeansArchivedContent> ParseArchivedContent(string json)
         {
             _logger.Debug($"JSON response from {nameof(ParseArchivedContent)}:{Environment.NewLine}{json}");
 
-            //
-            // note: string values are unicode encoded, but not sure whether little endian or big endian.
-            // todo: find out the endian-ness of the strings
-            //
-
-            //
-            // note: per-day entries are *usually* sorted where topmost in the list is the most recent.
-            //       however, look for "sortOrder" attribute.
-            //         - if found, then sort by a "sortOrder" integer value -- the higher it is, the more earlier in should be displayed.
-            //         - if not found, then consider topmost entry in collection as the earliest it should be shown for the day.
-            //
-
             var content = JObject.Parse(json);
             var entryCount = ((JArray)content["entries"]).Count();
-            var result = new List<IArchivedContent>(entryCount);
+            var result = new List<ITinybeansArchivedContent>(entryCount);
             foreach (var e in (JArray)content["entries"])
             {
+                var id = (int)e["id"];
+
+                // ensure this is not deleted -- skip it if it was deleted.
+                var isDeleted = (bool)e["deleted"];
+                if (isDeleted)
+                {
+                    _logger.Info($"Skipping content id '{id}' because it was deleted.");
+                    continue;
+                }
+
+                // if this is a video upload, then make sure the upload and/or encode succeeded.
+                // if it is a video upload and failed processing, then skip it.
+                var isEncodeFailed = e["attachmentType"] != null 
+                    && string.Equals((string)e["attachmentType"], "VIDEO", StringComparison.InvariantCultureIgnoreCase)
+                    && (bool)e["attachmentEncodingFailed"];
+
+                if (isEncodeFailed)
+                {
+                    _logger.Info($"Skipping content id '{id}' because it's video encode failed.");
+                    continue;
+                }
+
+                // all clear!
                 var parseMe = e.ToString();
-                result.Add(JsonConvert.DeserializeObject<ArchivedContent>(parseMe));
+                result.Add(JsonConvert.DeserializeObject<TinybeansArchivedContent>(parseMe));
             }
 
             if (!result.Any())

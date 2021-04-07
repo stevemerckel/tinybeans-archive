@@ -11,8 +11,14 @@ namespace TBA.Sandbox
 
         static void Main(string[] args)
         {
-            var rangeStart = new DateTime(2017, 7, 14, 1, 1, 1, DateTimeKind.Local);
-            var rangeEnd = rangeStart.AddMonths(12);
+            // OLD
+            //var rangeStart = new DateTime(2017, 7, 14, 1, 1, 1, DateTimeKind.Local);
+            //var rangeEnd = rangeStart.AddMonths(12);
+
+            const int MonthCount = 12;
+            var now = DateTime.Now.Date;
+            var rangeStart = now.AddMonths(-1 * MonthCount);
+            var rangeEnd = now;
 
             var logger = _kernel.Get<IAppLogger>();
             logger.Info("Hello World!");
