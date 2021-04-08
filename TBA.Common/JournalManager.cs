@@ -243,7 +243,13 @@ namespace TBA.Common
 
             sw.Stop();
             _logger.Info($"Processing time for {archives.Count} items using {TargetThreadCount} threads was {sw.ElapsedMilliseconds} ms");
-            Debugger.Break();
+
+            if (Debugger.IsAttached)
+                Debugger.Break();
+
+            // todo: write JSON metadata to file system
+            // 1 - write monthly json
+            // 2 - write daily json
 
 
             //archives
