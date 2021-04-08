@@ -33,7 +33,7 @@ namespace TBA.Common
                 var id = (int)e["id"];
                 var year = (int)e["year"];
                 var month = (int)e["month"];
-                var day = (int)e["year"];
+                var day = (int)e["day"];
                 var targetDate = new DateTime(year, month, day, 1, 1, 1, DateTimeKind.Local);
 
                 // ensure this is not deleted -- skip it if it was deleted.
