@@ -18,19 +18,19 @@ namespace TBA.Common
         /// Fetches journal entries for the specific date given.
         /// </summary>
         /// <param name="date">The target date (time is ignored)</param>
-        List<ITinybeansArchivedContent> GetByDate(DateTime date, long journalId);
+        List<ITinybeansEntry> GetByDate(DateTime date, long journalId);
 
         /// <summary>
         /// Fetches journal entries for the Year + Month given.
         /// </summary>
         /// <param name="yearMonth">The target calendar year + month</param>
-        List<ITinybeansArchivedContent> GetEntriesByYearMonth(DateTime yearMonth, long journalId);
+        List<ITinybeansEntry> GetEntriesByYearMonth(DateTime yearMonth, long journalId);
 
         /// <summary>
         /// Downloads the content to the returned byte array
         /// </summary>
-        /// <param name="content">The archived content to download, specifically targetting the <seealso cref="ITinybeansArchivedContent.SourceUrl"/> property</param>
+        /// <param name="content">The archived content to download, specifically targetting the <seealso cref="ITinybeansEntry.SourceUrl"/> property</param>
         /// <param name="destinationLocation">The location file path to write the content</param>
-        public void Download(ITinybeansArchivedContent content, string destinationLocation);
+        public void Download(ITinybeansEntry content, string destinationLocation);
     }
 }

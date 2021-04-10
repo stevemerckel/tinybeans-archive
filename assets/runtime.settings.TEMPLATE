@@ -1,4 +1,5 @@
 {
+	"max-thread-count": 1,
 	"api": {
 		"base-url": "https://tinybeans.com",
 		"auth-header-name": "authorization",

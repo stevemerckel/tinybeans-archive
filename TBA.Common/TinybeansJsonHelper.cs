@@ -21,20 +21,20 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public List<ITinybeansArchivedContent> ParseArchivedContent(string json)
+        public List<ITinybeansEntry> ParseArchivedContent(string json)
         {
             _logger.Debug($"JSON response from {nameof(ParseArchivedContent)}:{Environment.NewLine}{json}");
 
             var content = JObject.Parse(json);
             var entryCount = ((JArray)content["entries"]).Count();
-            var result = new List<ITinybeansArchivedContent>(entryCount);
+            var result = new List<ITinybeansEntry>(entryCount);
             foreach (var e in (JArray)content["entries"])
             {
                 var id = (int)e["id"];
                 var year = (int)e["year"];
                 var month = (int)e["month"];
                 var day = (int)e["day"];
-                var targetDate = new DateTime(year, month, day, 1, 1, 1, DateTimeKind.Local);
+                var targetDate = new DateTime(year, month, day, 0, 0, 0, DateTimeKind.Local);
 
                 // ensure this is not deleted -- skip it if it was deleted.
                 var isDeleted = (bool)e["deleted"];
@@ -58,7 +58,7 @@ namespace TBA.Common
 
                 // all clear!
                 var parseMe = e.ToString();
-                result.Add(JsonConvert.DeserializeObject<TinybeansArchivedContent>(parseMe));
+                result.Add(JsonConvert.DeserializeObject<TinybeansEntry>(parseMe));
             }
 
             if (!result.Any())

@@ -25,16 +25,8 @@ namespace TBA.Common
         /// <param name="logger">Logging object</param>
         public TinybeansApiHelper(IAppLogger logger, IRuntimeSettingsProvider runtimeSettingsProvider, ITinybeansJsonHelper jsonHelper, IFileManager fileManager)
         {
-            _logger = logger ?? throw new NullReferenceException(nameof(logger));
-
-            if (runtimeSettingsProvider == null)
-                throw new ArgumentNullException(nameof(runtimeSettingsProvider));
-
-            _runtimeSettings = runtimeSettingsProvider.GetRuntimeSettings() ?? throw new NullReferenceException(nameof(runtimeSettingsProvider.GetRuntimeSettings));
-
-            // validate runtime settings
-            _runtimeSettings.ValidateSettings();
-
+            _logger = logger;
+            _runtimeSettings = runtimeSettingsProvider.GetRuntimeSettings();
             _jsonHelper = jsonHelper;
             _fileManager = fileManager;
 
@@ -49,7 +41,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public List<ITinybeansArchivedContent> GetByDate(DateTime date, long journalId)
+        public List<ITinybeansEntry> GetByDate(DateTime date, long journalId)
         {
             _logger.Info($"Fetching day info for journal ID '{journalId}' for date '{date.ToString("MM/dd/yyyy")}'");
 
@@ -65,7 +57,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public List<ITinybeansArchivedContent> GetEntriesByYearMonth(DateTime yearMonth, long journalId)
+        public List<ITinybeansEntry> GetEntriesByYearMonth(DateTime yearMonth, long journalId)
         {
             _logger.Info($"Fetching month info for journal ID '{journalId}' for date '{yearMonth.ToString("MMMM yyyy")}'");
 
@@ -95,7 +87,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public void Download(ITinybeansArchivedContent archive, string destinationLocation)
+        public void Download(ITinybeansEntry archive, string destinationLocation)
         {
             // Rule: we do *not* try downloading content if the SourceUrl is a local path.
             //       this situation would likely happen if the class was initialized from a local JSON structure.

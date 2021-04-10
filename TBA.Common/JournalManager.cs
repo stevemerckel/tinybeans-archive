@@ -15,20 +15,27 @@ namespace TBA.Common
     public sealed class JournalManager : IJournalManager
     {
         private readonly IAppLogger _logger;
-        const double TargetThreadCount = 8; // todo: refactor to pull at runtime
+        //const double TargetThreadCount = 8; // todo: refactor to pull at runtime
+        private IRuntimeSettings _runtimeSettings;
 
         /// <summary>
         /// Default ctor
         /// </summary>
+        /// <param name="logger">Logger implementation</param>
         /// <param name="fileManager">File manager for working with file system</param>
         /// <param name="tinybeansApiHelper">Tinybeans API helper</param>
+        /// <param name="runtimeSettingsProvider">Runtime settings provider</param>
         /// <param name="rootForRepo"></param>
-        public JournalManager(IAppLogger logger, IFileManager fileManager, ITinybeansApiHelper tinybeansApiHelper, string rootForRepo)
+        public JournalManager(IAppLogger logger, IFileManager fileManager, ITinybeansApiHelper tinybeansApiHelper, IRuntimeSettingsProvider runtimeSettingsProvider, string rootForRepo)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             FileManager = fileManager ?? throw new ArgumentNullException(nameof(fileManager));
             TinybeansApi = tinybeansApiHelper ?? throw new ArgumentNullException(nameof(tinybeansApiHelper));
+            _runtimeSettings = runtimeSettingsProvider?.GetRuntimeSettings() ?? throw new ArgumentNullException(nameof(runtimeSettingsProvider));
             Root = rootForRepo;
+
+            // validate runtime settings
+            _runtimeSettings.ValidateSettings();
 
             if (string.IsNullOrWhiteSpace(Root))
                 throw new ArgumentNullException(nameof(rootForRepo));
@@ -48,7 +55,7 @@ namespace TBA.Common
         public string Root { get; private set; }
 
         /// <inheritdoc />
-        public void Download(ITinybeansArchivedContent content, string destinationLocation)
+        public void Download(ITinybeansEntry content, string destinationLocation)
         {
             TinybeansApi.Download(content, destinationLocation);
         }
@@ -66,7 +73,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public List<ITinybeansArchivedContent> GetArchives(string journalId, DateTime start, DateTime end)
+        public List<ITinybeansEntry> GetArchives(string journalId, DateTime start, DateTime end)
         {
             if (string.IsNullOrWhiteSpace(journalId))
                 throw new ArgumentException("Journal ID cannot be null/empty/whitespace !!");
@@ -78,7 +85,7 @@ namespace TBA.Common
                 throw new ArgumentException($"The value '{journalId}' cannot be parsed to {nameof(Int64)} !!");
 
             // fetch the wider pool
-            var pool = new List<ITinybeansArchivedContent>(512); // init to a large net to avoid early expansions of List<T>
+            var pool = new List<ITinybeansEntry>(512); // init to a large net to avoid early expansions of List<T>
             var currentYearMonth = new DateTime(start.Year, start.Month, 1); // first day of the "start" year-month
             do
             {
@@ -100,13 +107,13 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public List<ITinybeansArchivedContent> GetByDate(DateTime date, long journalId)
+        public List<ITinybeansEntry> GetByDate(DateTime date, long journalId)
         {
             return TinybeansApi.GetByDate(date, journalId);
         }
 
         /// <inheritdoc />
-        public List<ITinybeansArchivedContent> GetEntriesByYearMonth(DateTime yearMonth, long journalId)
+        public List<ITinybeansEntry> GetEntriesByYearMonth(DateTime yearMonth, long journalId)
         {
             return TinybeansApi.GetEntriesByYearMonth(yearMonth, journalId);
         }
@@ -118,7 +125,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public void WriteArchivesToFileSystem(List<ITinybeansArchivedContent> archives)
+        public void WriteArchivesToFileSystem(List<ITinybeansEntry> archives)
         {
             if (archives == null || !archives.Any())
             {
@@ -151,8 +158,8 @@ namespace TBA.Common
             //
 
             // write the archives to destination system
-            var localPathDictionary = new Dictionary<string, string>(archives.Count);
-            var downloadBehavior = new Func<ITinybeansArchivedContent, Tuple<string, string>>((archive) =>
+            var localPathDictionary = new Dictionary<ulong, string>(archives.Count);
+            var downloadBehavior = new Func<ITinybeansEntry, Tuple<ulong, string>>((archive) =>
             {
                 var destinationFileLocation = DeterminePathToWriteArchiveContent(archive, Root);
                 _logger.Debug($"For archive id '{archive.Id}' (type = {archive.ArchiveType}), the destination path determined to write the file was this: {destinationFileLocation}");
@@ -165,12 +172,12 @@ namespace TBA.Common
                     TinybeansApi.Download(archive, destinationFileLocation);
                 }
 
-                return new Tuple<string, string>(archive.Id, destinationFileLocation);
+                return new Tuple<ulong, string>(archive.Id, destinationFileLocation);
             });
 
             var sw = new Stopwatch();
             sw.Start();
-            if (TargetThreadCount < 2)
+            if (_runtimeSettings.MaxThreadCount < 2)
             {
                 // process serially
                 foreach (var a in archives)
@@ -182,9 +189,10 @@ namespace TBA.Common
             else
             {
                 // multithread the workload
-                var poolSize = (int)Math.Ceiling(archives.Count / TargetThreadCount);
+                var poolSize = (int)Math.Ceiling(archives.Count / (double)_runtimeSettings.MaxThreadCount);
                 var groups = SplitList(archives, poolSize);
                 var threads = new List<Task>();
+                var groupSplitInfo = new List<long>();
                 foreach (var g in groups)
                 {
                     var task = new Task(() =>
@@ -242,7 +250,7 @@ namespace TBA.Common
             }
 
             sw.Stop();
-            _logger.Info($"Processing time for {archives.Count} items using {TargetThreadCount} threads was {sw.ElapsedMilliseconds} ms");
+            _logger.Info($"Processing time for {archives.Count} items using {_runtimeSettings.MaxThreadCount} thread(s) was {sw.ElapsedMilliseconds} ms");
 
             if (Debugger.IsAttached)
                 Debugger.Break();
@@ -275,7 +283,7 @@ namespace TBA.Common
             // set year-month tracker variable for day "1" of min
             var minDate = archives.Min(x => x.DisplayedOn);
             var maxDate = archives.Max(x => x.DisplayedOn);
-            var currentYearMonth = new DateTime(minDate.Year, minDate.Month, 1); // first day of the "start" year-month
+            var currentYearMonth = new DateTime(minDate.Year, minDate.Month, 1, 0, 0, 0); // first day of the "start" year-month
             do
             {
                 // fetch pool of archives for current year-month
@@ -313,7 +321,7 @@ namespace TBA.Common
         /// <param name="archive">The archive to write</param>
         /// <param name="root">The starting directory</param>
         /// <returns>The full path to where to write the file</returns>
-        private string DeterminePathToWriteArchiveContent(ITinybeansArchivedContent archive, string root)
+        private string DeterminePathToWriteArchiveContent(ITinybeansEntry archive, string root)
         {
             var directoryElements = new List<string>
             {
@@ -360,7 +368,7 @@ namespace TBA.Common
         /// <param name="journalId">The journal ID</param>
         /// <param name="rootDirectory">The root directory for the entire repo</param>
         /// <returns></returns>
-        private List<ITinybeansArchivedContent> GetArchivesFromLocalFileSystem(long journalId)
+        private List<ITinybeansEntry> GetArchivesFromLocalFileSystem(long journalId)
         {
             // find and parse the monthly json files.
             // note: we only want the YYYY-MM.json files, not the YYYY-MM-DD.json files.
@@ -374,7 +382,7 @@ namespace TBA.Common
             }
 
             // parse json content into POCOs
-            var archives = new List<ITinybeansArchivedContent>(jsonFiles.Count() * 2); // hack: init with a wide net by assuming 2 content entries per JSON file
+            var archives = new List<ITinybeansEntry>(jsonFiles.Count() * 2); // hack: init with a wide net by assuming 2 content entries per JSON file
             var fileProcessedCount = 0;
             try
             {
@@ -387,7 +395,7 @@ namespace TBA.Common
                         continue;
                     }
 
-                    archives.Add(JsonConvert.DeserializeObject<TinybeansArchivedContent>(content));
+                    archives.Add(JsonConvert.DeserializeObject<TinybeansEntry>(content));
                     fileProcessedCount++;
                 }
             }

@@ -19,7 +19,8 @@ namespace TBA.Common
         /// <param name="authorizationHeaderKey">API header key for authorization</param>
         /// <param name="authorizationHeaderValue">API header value for authorization</param>
         /// <param name="apiBaseUrl">The bse URL for the API</param>
-        public RuntimeSettings(string authorizationHeaderKey, string authorizationHeaderValue, string apiBaseUrl)
+        /// <param name="threadCount"></param>
+        public RuntimeSettings(string authorizationHeaderKey, string authorizationHeaderValue, string apiBaseUrl, int threadCount)
         {
             AuthorizationHeaderKey = authorizationHeaderKey;
             AuthorizationHeaderValue = authorizationHeaderValue;
@@ -38,6 +39,9 @@ namespace TBA.Common
         [JsonProperty("api/base-url")]
         public string ApiBaseUrl { get; set; }
 
+        [JsonProperty("max-thread-count")]
+        public int MaxThreadCount { get; set; }
+
         /// <inheritdoc />
         public bool ValidateSettings()
         {
@@ -53,6 +57,10 @@ namespace TBA.Common
 
             // api url
             if (string.IsNullOrWhiteSpace(ApiBaseUrl))
+                isValid = false;
+
+            // max thread count
+            if (MaxThreadCount < 1 || MaxThreadCount > 8)
                 isValid = false;
             
             try
