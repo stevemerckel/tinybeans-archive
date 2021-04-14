@@ -10,8 +10,8 @@ namespace TBA.Common
     public class TinybeansEntry : ITinybeansEntry
     {
         [JsonConstructor]
-        public TinybeansEntry(ulong id, string type, int year, int month, int day, JObject blobs, long journalId, string caption, string attachmentType, string attachmentUrl, int sortOrder = -1)
-            : this(id, new DateTime(year, month, day), ConvertArchiveTextToEnum(type, attachmentType), caption, journalId.ToString(), sortOrder, null)
+        public TinybeansEntry(ulong id, string type, int year, int month, int day, JObject blobs, long journalId, string caption, string attachmentType, string attachmentUrl, ulong timestamp, int sortOrder = -1)
+            : this(id, new DateTime(year, month, day), ConvertArchiveTextToEnum(type, attachmentType), caption, journalId.ToString(), sortOrder, null, timestamp)
         {
             if (ArchiveType == ArchiveType.Text)
                 return; // nothing extra to do
@@ -56,7 +56,8 @@ namespace TBA.Common
         /// <param name="journalId">The journal Id this entry belongs to</param>
         /// <param name="sortOrder">The optional sort order for showing an item on the page</param>
         /// <param name="sourceUrl">The source URL for the file -- not used for type <seealso cref="ArchiveType.Text"/></param>
-        public TinybeansEntry(ulong id, DateTime displayedOn, ArchiveType type, string caption, string journalId, int sortOrder = -1, string sourceUrl = null)
+        /// <param name="timestamp">The arbitrary version number for the content in this entry</param>
+        public TinybeansEntry(ulong id, DateTime displayedOn, ArchiveType type, string caption, string journalId, int sortOrder = -1, string sourceUrl = null, ulong timestamp = 0)
         {
             Id = id;
             DisplayedOn = displayedOn;
@@ -65,6 +66,7 @@ namespace TBA.Common
             Caption = caption;
             JournalId = journalId;
             SortOverride = sortOrder >= 0 ? sortOrder : (int?)null;
+            Timestamp = timestamp;
 
             // todo: re-enable the section below once JsonConstructor pass-through is tested.
             //if (ArchiveType != ArchiveType.Text && SourceUrl == null)
@@ -100,6 +102,9 @@ namespace TBA.Common
 
         /// <inheritdoc />
         public string ThumbnailUrlSquare { get; set; }
+
+        /// <inheritdoc />
+        public ulong Timestamp { get; set; }
 
         /// <summary>
         /// Reads in the two possible strings, weighs against some business rules, and returns the matching <see cref="ArchiveType">ArchiveType</see> enum

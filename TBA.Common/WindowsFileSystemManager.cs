@@ -97,6 +97,12 @@ namespace TBA.Common
         /// <inheritdoc />
         public void FileWriteText(string fileLocation, string contents)
         {
+            FileWriteText(fileLocation, contents, Encoding.UTF8);
+        }
+
+        /// <inheritdoc />
+        public void FileWriteText(string fileLocation, string contents, Encoding targetEncoding)
+        {
             if (string.IsNullOrWhiteSpace(fileLocation))
                 throw new ArgumentNullException(nameof(fileLocation), "Value cannot be null or empty.");
 
@@ -104,7 +110,7 @@ namespace TBA.Common
 
             try
             {
-                File.WriteAllText(fileLocation, contents);
+                File.WriteAllText(fileLocation, contents, targetEncoding);
             }
             catch (IOException)
             {
@@ -261,5 +267,7 @@ namespace TBA.Common
                 Thread.Sleep(2);
             }
         }
+
+
     }
 }

@@ -124,7 +124,7 @@ namespace TBA.Common
                         FirstName = (string)c["firstName"],
                         LastName = (string)c["lastName"],
                         BornOn = DateTime.ParseExact((string)c["dob"], "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
-                        Gender = (string)c["gender"]
+                        Gender = Child.GetGender((string)c["gender"])
                     };
                     children.Add(child);
                 }

@@ -5,13 +5,15 @@ namespace TBA.Common
     public class Child : Person
     {
         public string Url { get; set; }
-        public DateTime BornOn { get; set; }
-        public Gender GetGender(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException($"{nameof(value)} is missing!");
 
-            var firstCharacter = value.Trim().Substring(0, 1).ToUpper();
+        public DateTime BornOn { get; set; }
+
+        public static Gender GetGender(string genderString)
+        {
+            if (string.IsNullOrWhiteSpace(genderString))
+                throw new ArgumentException($"{nameof(genderString)} is missing!");
+
+            var firstCharacter = genderString.Trim().Substring(0, 1).ToUpper();
             switch (firstCharacter)
             {
                 case "M":

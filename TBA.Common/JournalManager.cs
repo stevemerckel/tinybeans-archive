@@ -141,9 +141,9 @@ namespace TBA.Common
             //      /journal-id (6 digit?)
             //          /year (4-digit)
             //              /month (2-digit)
-            //                  YYYY-MM.json (year-month json summary)
+            //                  yyyy-MM.json (year-month json summary)
             //                  /day
-            //                      YYYY-MM-DD-json (daily summary)
+            //                      yyyy-MM-dd.json (daily summary)
             //                      *.[text|image|video]
 
             //
@@ -162,7 +162,7 @@ namespace TBA.Common
             var downloadBehavior = new Func<ITinybeansEntry, Tuple<ulong, string>>((archive) =>
             {
                 var destinationFileLocation = DeterminePathToWriteArchiveContent(archive, Root);
-                _logger.Debug($"For archive id '{archive.Id}' (type = {archive.ArchiveType}), the destination path determined to write the file was this: {destinationFileLocation}");
+                _logger.Debug($"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  For archive id '{archive.Id}' (type = {archive.ArchiveType}), the destination path determined to write the file was this: {destinationFileLocation}");
                 if (archive.ArchiveType == ArchiveType.Text)
                 {
                     FileManager.FileWriteText(destinationFileLocation, archive.Caption);
@@ -216,14 +216,14 @@ namespace TBA.Common
                                 }
                                 catch (WebException webEx)
                                 {
-                                    var msg = webEx.ToString();
+                                    var msg = $"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  {webEx}";
                                     if (webEx.InnerException != null)
                                         msg += $"{Environment.NewLine}*** INNER EXCEPTION *** -- {webEx.InnerException}";
                                     _logger.Error($"{nameof(WebException)} thrown trying to download file '{x.SourceUrl}' for date {x.DisplayedOn.ToString("yyyy-MM-dd")} -- Details: {webEx}");
                                 }
                                 catch (Exception ex)
                                 {
-                                    var msg = ex.ToString();
+                                    var msg = $"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  {ex}";
                                     if (ex.InnerException != null)
                                         msg += $"{Environment.NewLine}*** INNER EXCEPTION *** -- {ex.InnerException}";
                                     _logger.Error($"{nameof(Exception)} thrown trying to download file '{x.SourceUrl}' for date {x.DisplayedOn.ToString("yyyy-MM-dd")} -- Details: {ex}");
@@ -232,13 +232,13 @@ namespace TBA.Common
                                 if (!isProcessed)
                                 {
                                     var totalDelayInMs = (i * DelayInMs) + DelayInMs;
-                                    _logger.Warn($"Failed attempt #{i + 1} at downloading '{x.SourceUrl}'.  Going to wait {totalDelayInMs} milliseconds and try again.");
+                                    _logger.Warn($"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  Failed attempt #{i + 1} at downloading '{x.SourceUrl}'.  Going to wait {totalDelayInMs} milliseconds and try again.");
                                     Thread.Sleep(totalDelayInMs);
                                 }
                             }
 
                             if (!isProcessed)
-                                _logger.Error($"Failed to download '{x.SourceUrl}' after {MaxAttemptCount} attempts.");
+                                _logger.Error($"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  Failed to download '{x.SourceUrl}' after {MaxAttemptCount} attempts.");
                         });
                     }
                     , TaskCreationOptions.LongRunning);
@@ -250,69 +250,50 @@ namespace TBA.Common
             }
 
             sw.Stop();
-            _logger.Info($"Processing time for {archives.Count} items using {_runtimeSettings.MaxThreadCount} thread(s) was {sw.ElapsedMilliseconds} ms");
-
-            if (Debugger.IsAttached)
-                Debugger.Break();
-
-            // todo: write JSON metadata to file system
-            // 1 - write monthly json
-            // 2 - write daily json
-
-
-            //archives
-            //    .ForEach(x =>
-            //    {
-            //        var destinationFileLocation = DeterminePathToWriteArchiveContent(x, Root);
-            //        _logger.Debug($"For archive id '{x.Id}' (type = {x.ArchiveType}), the destination path determined to write the file was this: {destinationFileLocation}");
-            //        if (x.ArchiveType == ArchiveType.Text)
-            //        {
-            //            FileManager.FileWriteText(destinationFileLocation, x.Caption);
-            //        }
-            //        else
-            //        {
-            //            TinybeansApi.Download(x, destinationFileLocation);
-            //        }
-
-            //        localPathDictionary.Add(x.Id, destinationFileLocation);
-            //    });
+            _logger.Info($"Processing time for downloading {archives.Count} items using {_runtimeSettings.MaxThreadCount} thread(s) was {sw.ElapsedMilliseconds} ms");
 
             // write JSON metadata to file system
-
-            // determine min/max of range
-            // set year-month tracker variable for day "1" of min
             var minDate = archives.Min(x => x.DisplayedOn);
             var maxDate = archives.Max(x => x.DisplayedOn);
-            var currentYearMonth = new DateTime(minDate.Year, minDate.Month, 1, 0, 0, 0); // first day of the "start" year-month
+            var currentYearMonth = new DateTime(minDate.Year, minDate.Month, 1, 0, 0, 0, DateTimeKind.Local); // first day of the "start" year-month
+            sw.Reset();
+            sw.Start();
             do
             {
                 // fetch pool of archives for current year-month
-                var monthArchives = archives
+                var currentMonthArchives = archives
                     .Where(x => x.DisplayedOn.Date >= currentYearMonth.Date && x.DisplayedOn.Date < currentYearMonth.AddMonths(1).Date)
                     .OrderBy(x => x.DisplayedOn)
-                    .ThenBy(x => x.SortOverride)
+                    .ThenBy(x => x.SortOverride ?? -1)
                     .ToList();
 
-                if (monthArchives.Any())
+                if (!currentMonthArchives.Any())
                 {
-                    // todo: write the month's summary JSON
-
-                    // todo: write each day within the month's summary JSON
-                    var daysToWrite = monthArchives.Select(x => x.DisplayedOn.Date).Distinct();
-                    foreach (var day in daysToWrite)
-                    {
-                        monthArchives
-                            .Where(x => x.DisplayedOn.Date == day)
-                            .OrderBy(x => x.SortOverride)
-                            .ToList()
-                            .ForEach(x => _logger.Debug($"For id '{x.Id}' we matched to file here: {localPathDictionary[x.Id]}"));
-                    }
+                    _logger.Debug($"For year-month of '{currentYearMonth.ToTinybeansMonthYearString()}' there are zero entries.  Moving on.");
+                    return;
                 }
+
+                // write out each day's manifest
+                _logger.Info($"For year-month of '{currentYearMonth.ToTinybeansMonthYearString()}' there are {currentMonthArchives.Count()} entries.");
+                var daysToWrite = currentMonthArchives.Select(x => x.DisplayedOn.Date).Distinct();
+                foreach (var day in daysToWrite)
+                {
+                    var currentDayEntries = currentMonthArchives
+                        .Where(x => x.DisplayedOn.Date == day)
+                        .OrderBy(x => x.SortOverride ?? -1)
+                        .ToList();
+                    var dayManifestLoc = DeterminePathToWriteDayJsonManifest(currentDayEntries.First(), Root);
+                    FileManager.FileWriteText(dayManifestLoc, JsonConvert.SerializeObject(currentDayEntries, Formatting.Indented), System.Text.Encoding.Unicode);
+                }
+
+                _logger.Debug($"Finished writing manifest for days in '{currentMonthArchives.First().DisplayedOn.ToString("yyyy-MM")}'");
 
                 // add a month to "current" tracker
                 currentYearMonth = currentYearMonth.AddMonths(1);
             }
             while (currentYearMonth <= maxDate.Date);
+            sw.Stop();
+            _logger.Info($"Processing time for writing manifests for {archives.Count} entries was {sw.ElapsedMilliseconds} ms");
         }
 
         /// <summary>
@@ -323,6 +304,28 @@ namespace TBA.Common
         /// <returns>The full path to where to write the file</returns>
         private string DeterminePathToWriteArchiveContent(ITinybeansEntry archive, string root)
         {
+            var targetDirectory = DeterminePathToArchiveDirectory(archive, root);
+            var destinationFileName = archive.ArchiveType == ArchiveType.Text
+                ? $"{Guid.NewGuid().ToString("D")}.txt"
+                : $"{FileManager.FileGetNameWithoutExtension(archive.SourceUrl)}{FileManager.FileGetExtension(archive.SourceUrl)}";
+            return FileManager.PathCombine(targetDirectory, destinationFileName);
+        }
+
+        /// <summary>
+        /// Determines the full file path to write the archive date's JSON manifest
+        /// </summary>
+        /// <param name="archive">The archive to write</param>
+        /// <param name="root">The starting directory</param>
+        /// <returns>The full path to where to write the file</returns>
+        private string DeterminePathToWriteDayJsonManifest(ITinybeansEntry archive, string root)
+        {
+            var targetDirectory = DeterminePathToArchiveDirectory(archive, root);
+            var manifestFileName = $"manifest.{archive.DisplayedOn.ToString("yyyy-MM-dd")}.json";
+            return FileManager.PathCombine(targetDirectory, manifestFileName);
+        }
+
+        private string DeterminePathToArchiveDirectory(ITinybeansEntry archive, string root)
+        {
             var directoryElements = new List<string>
             {
                 root,
@@ -331,12 +334,7 @@ namespace TBA.Common
                 archive.DisplayedOn.ToString("MM"),
                 archive.DisplayedOn.ToString("dd")
             };
-
-            var destinationFileName = archive.ArchiveType == ArchiveType.Text
-                ? $"{Guid.NewGuid().ToString("D")}.txt"
-                : $"{FileManager.FileGetNameWithoutExtension(archive.SourceUrl)}{FileManager.FileGetExtension(archive.SourceUrl)}";
-            directoryElements.Add(destinationFileName);
-            var result = string.Empty;
+            string result = string.Empty;
             directoryElements.ForEach(x => result = FileManager.PathCombine(result, x));
             return result;
         }

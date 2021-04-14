@@ -13,6 +13,14 @@ namespace TBA.Common
         public ulong Id { get; }
 
         /// <summary>
+        /// Some (possibly) arbitrary value that indicates a version of the entry.
+        /// </summary>
+        /// <remarks>
+        /// When looking to see if an entry has changed or not, compare what is stored against this value from remote.
+        /// </remarks>
+        public ulong Timestamp { get; }
+
+        /// <summary>
         /// The date in the archive that this is to be shown on
         /// </summary>
         public DateTime DisplayedOn { get; }

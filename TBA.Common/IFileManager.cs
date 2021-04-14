@@ -8,11 +8,19 @@ namespace TBA.Common
     public interface IFileManager
     {
         /// <summary>
-        /// Creates a file at the specified location and writes the text received.  If the file exists, it will be overwritten.
+        /// Creates a file at the specified location and writes the text receivedas <seealso cref="System.Text.Encoding.UTF8"/>.  If the file exists, it will be overwritten.
         /// </summary>
         /// <param name="fileLocation">The file path</param>
         /// <param name="contents">The text contents to write</param>
         void FileWriteText(string fileLocation, string contents);
+
+        /// <summary>
+        /// Creates a file at the specified location and writes the text received.  If the file exists, it will be overwritten.
+        /// </summary>
+        /// <param name="fileLocation">The file path</param>
+        /// <param name="contents">The text contents to write</param>
+        /// <param name="targetEncoding">The target encoding type</param>
+        void FileWriteText(string fileLocation, string contents, System.Text.Encoding targetEncoding);
 
         /// <summary>
         /// Creates a file at the specified location and writes the bits received.  If the file exists, it will be overwritten.

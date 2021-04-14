@@ -1,6 +1,6 @@
 ﻿namespace TBA.Common
 {
-    public class Person
+    public abstract class Person
     {
         public long Id { get; set; }
         public string FirstName { get; set; }
