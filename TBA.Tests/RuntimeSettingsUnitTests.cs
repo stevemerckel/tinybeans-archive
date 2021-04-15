@@ -25,7 +25,8 @@ namespace TBA.Tests
             {
                 ApiBaseUrl = "https://fake.tinybeans.api.url.meh",
                 AuthorizationHeaderKey = "fake-auth-key",
-                AuthorizationHeaderValue = "fake-auth-value"
+                AuthorizationHeaderValue = "fake-auth-value",
+                MaxThreadCount = 2
             };
 
             Mock<IRuntimeSettingsProvider> provider = new Mock<IRuntimeSettingsProvider>();

@@ -85,8 +85,8 @@ namespace TBA.Common
                 throw new ArgumentException($"The value '{journalId}' cannot be parsed to {nameof(Int64)} !!");
 
             // fetch the wider pool
-            var pool = new List<ITinybeansEntry>(512); // init to a large net to avoid early expansions of List<T>
-            var currentYearMonth = new DateTime(start.Year, start.Month, 1); // first day of the "start" year-month
+            var pool = new List<ITinybeansEntry>(512); // init with a large net to avoid perf hit of early expansions of List<T>
+            var currentYearMonth = new DateTime(start.Year, start.Month, 1, 0, 0, 0, DateTimeKind.Local); // first day of the "start" year-month
             do
             {
                 // fetch current year-month combo of archive entries

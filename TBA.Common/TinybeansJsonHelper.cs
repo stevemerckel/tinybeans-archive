@@ -119,12 +119,12 @@ namespace TBA.Common
                 {
                     var child = new Child
                     {
-                        Id = (long)c["id"],
+                        Id = (ulong)c["id"],
                         Url = (string)c["URL"],
                         FirstName = (string)c["firstName"],
                         LastName = (string)c["lastName"],
                         BornOn = DateTime.ParseExact((string)c["dob"], "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
-                        Gender = Child.GetGender((string)c["gender"])
+                        Gender = Person.GetGender((string)c["gender"])
                     };
                     children.Add(child);
                 }

@@ -68,5 +68,18 @@ namespace TBA.Tests
             settings.AuthorizationHeaderValue = invalidKey;
             Assert.Throws<SettingsFailureException>(() => settings.ValidateSettings());
         }
+
+        [TestCase(int.MinValue)]
+        [TestCase(-1)]
+        [TestCase(0)]
+        [TestCase(9)]
+        [TestCase(10)]
+        [TestCase(int.MaxValue)]
+        public void Test_SettingsThreadCountInvalid_Fail(int threadCount)
+        {
+            var settings = _sut.GetRuntimeSettings();
+            settings.MaxThreadCount = threadCount;
+            Assert.Throws<SettingsFailureException>(() => settings.ValidateSettings());
+        }
     }
 }
