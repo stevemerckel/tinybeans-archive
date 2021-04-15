@@ -123,7 +123,8 @@ namespace TBA.Tests
         }
 
         /// <summary>
-        /// Use this to get a non-shared instance of <see cref="IRuntimeSettings"/> for testing
+        /// <para>Use this to get a non-shared instance of <see cref="IRuntimeSettings"/> for testing.</para>
+        /// <para>If you try accessing it from the received <see cref="IRuntimeSettingsProvider"/> object, testing changes will cause issues when tests run concurrently.</para>
         /// </summary>
         /// <remarks>
         /// As properties are added to <see cref="IRuntimeSettings"/> interface, also add the mappings in the returned object.
