@@ -13,6 +13,8 @@ namespace TBA.Tests
     public abstract class RuntimeSettingsBaseTests : TestBase
     {
         private readonly IRuntimeSettingsProvider _sut;
+        private const int ExpectedMinThreadCountAllowed = 1;
+        private const int ExpectedMaxThreadCountAllowed = 8;
 
         /// <summary>
         /// Default ctor
@@ -44,7 +46,7 @@ namespace TBA.Tests
         [TestCase("not-a-real-url-at-all")]
         public void Test_SettingsInvalidApiUrl_Fail(string invalidApiUrl)
         {
-            var settings = _sut.GetRuntimeSettings();
+            var settings = GetRuntimeSettingsInstance();
             settings.ApiBaseUrl = invalidApiUrl;
             Assert.Throws<SettingsFailureException>(() => settings.ValidateSettings());
         }
@@ -54,7 +56,7 @@ namespace TBA.Tests
         [TestCase("    ")]
         public void Test_SettingsMissingAuthKey_Fail(string invalidKey)
         {
-            var settings = _sut.GetRuntimeSettings();
+            var settings = GetRuntimeSettingsInstance();
             settings.AuthorizationHeaderKey = invalidKey;
             Assert.Throws<SettingsFailureException>(() => settings.ValidateSettings());
         }
@@ -64,22 +66,78 @@ namespace TBA.Tests
         [TestCase("    ")]
         public void Test_SettingsMissingAuthValue_Fail(string invalidKey)
         {
-            var settings = _sut.GetRuntimeSettings();
+            var settings = GetRuntimeSettingsInstance();
             settings.AuthorizationHeaderValue = invalidKey;
             Assert.Throws<SettingsFailureException>(() => settings.ValidateSettings());
         }
 
-        [TestCase(int.MinValue)]
-        [TestCase(-1)]
-        [TestCase(0)]
-        [TestCase(9)]
-        [TestCase(10)]
-        [TestCase(int.MaxValue)]
-        public void Test_SettingsThreadCountInvalid_Fail(int threadCount)
+        [Test]
+        public void Test_SettingsThreadCountOutsideRangeIsInvalid_Fail()
         {
-            var settings = _sut.GetRuntimeSettings();
-            settings.MaxThreadCount = threadCount;
-            Assert.Throws<SettingsFailureException>(() => settings.ValidateSettings());
+            var settings = GetRuntimeSettingsInstance();
+            var originalMaxThreadCount = settings.MaxThreadCount;
+
+            Assert.Multiple(() =>
+            {
+                settings.MaxThreadCount = ExpectedMinThreadCountAllowed - 1;
+                Assert.Throws<SettingsFailureException>(() => settings.ValidateSettings());
+                settings.MaxThreadCount = ExpectedMaxThreadCountAllowed + 1;
+                Assert.Throws<SettingsFailureException>(() => settings.ValidateSettings());
+            });
+
+            settings.MaxThreadCount = originalMaxThreadCount;
+            Assert.AreEqual(originalMaxThreadCount, settings.MaxThreadCount);
+        }
+
+        [Test]
+        public void Test_ExpectedMaxIsNotLessThanMin_Success()
+        {
+            Assert.IsFalse(ExpectedMaxThreadCountAllowed < ExpectedMinThreadCountAllowed);
+        }
+
+        [Test]
+        public void Test_SettingsThreadCountInclusiveRangeIsValid_Success()
+        {
+            var settings = GetRuntimeSettingsInstance();
+            var originalMaxThreadCount = settings.MaxThreadCount;
+
+            Assert.Multiple(() =>
+            {
+                var targetThreadCountToTest = ExpectedMinThreadCountAllowed;
+                while (true)
+                {
+                    // test
+                    settings.MaxThreadCount = targetThreadCountToTest;
+                    Assert.IsTrue(settings.ValidateSettings());
+
+                    // increase count to test, but exit if we exceed the expected max allowed
+                    targetThreadCountToTest++;
+                    if (targetThreadCountToTest > ExpectedMaxThreadCountAllowed)
+                        break;
+                }
+            });
+
+            // ensure we can reset
+            settings.MaxThreadCount = originalMaxThreadCount;
+            Assert.AreEqual(originalMaxThreadCount, settings.MaxThreadCount);
+        }
+
+        /// <summary>
+        /// Use this to get a non-shared instance of <see cref="IRuntimeSettings"/> for testing
+        /// </summary>
+        /// <remarks>
+        /// As properties are added to <see cref="IRuntimeSettings"/> interface, also add the mappings in the returned object.
+        /// </remarks>
+        private IRuntimeSettings GetRuntimeSettingsInstance()
+        {
+            var original = _sut.GetRuntimeSettings();
+            return new RuntimeSettings
+            {
+                ApiBaseUrl = original.ApiBaseUrl,
+                AuthorizationHeaderKey = original.AuthorizationHeaderKey,
+                AuthorizationHeaderValue = original.AuthorizationHeaderValue,
+                MaxThreadCount = original.MaxThreadCount
+            };
         }
     }
 }

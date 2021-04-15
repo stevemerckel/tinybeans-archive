@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Diagnostics;
 
 namespace TBA.Common
 {
@@ -49,19 +50,31 @@ namespace TBA.Common
 
             // header key
             if (string.IsNullOrWhiteSpace(AuthorizationHeaderKey))
+            {
+                Console.WriteLine($"Failed on {nameof(AuthorizationHeaderKey)} -- value = '{(string.IsNullOrWhiteSpace(AuthorizationHeaderKey) ? "[NULL/EMPTY]" : AuthorizationHeaderKey)}'");
                 isValid = false;
+            }
 
             // header value
             if (string.IsNullOrWhiteSpace(AuthorizationHeaderValue))
+            {
+                Console.WriteLine($"Failed on {nameof(AuthorizationHeaderValue)} -- value = '{(string.IsNullOrWhiteSpace(AuthorizationHeaderValue) ? "[NULL/EMPTY]" : AuthorizationHeaderValue)}'");
                 isValid = false;
+            }
 
             // api url
             if (string.IsNullOrWhiteSpace(ApiBaseUrl))
+            {
+                Console.WriteLine($"Failed on string parse of {nameof(ApiBaseUrl)} -- value = '{(string.IsNullOrWhiteSpace(ApiBaseUrl) ? "[NULL/EMPTY]" : ApiBaseUrl)}'");
                 isValid = false;
+            }
 
             // max thread count
             if (MaxThreadCount < 1 || MaxThreadCount > 8)
+            {
+                Console.WriteLine($"Failed on {nameof(MaxThreadCount)} -- value = {MaxThreadCount}");
                 isValid = false;
+            }
             
             try
             {
@@ -69,6 +82,7 @@ namespace TBA.Common
             }
             catch
             {
+                Console.WriteLine($"Failed on init of {nameof(Uri)} using {nameof(ApiBaseUrl)} with value of '{(string.IsNullOrWhiteSpace(ApiBaseUrl) ? "[NULL/EMPTY]" : ApiBaseUrl)}'");
                 isValid = false;
             }
 
