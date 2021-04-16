@@ -9,30 +9,40 @@ The purpose of this project is to automate the backup creation of journals creat
 The following list summarizes the tech stack:
 
 * .NET Core (v3.1)
-* .NET Standard (v2.0)
-* JSON (via Newtonsoft JSON.Net)
-* Inversion of Control (Ninject)
-* Unit Testing (NUnit)
+* JSON (via _Newtonsoft JSON_)
+* Inversion of Control (via _Ninject_)
+* Unit Testing (via _NUnit_)
 
-## Running and Debugging
+## Solution Overview and Debugging
 
-[TODO]
+The primary console application runs from `TBA.ConsoleApp`.  There is an optional testbed project called `TBA.Sandbox` for doing ad-hoc testing of functionality.  Either of these can be run from Visual Studio.
 
-## Downloading Journal Entries
+The bulk of business logic is in `TBA.Common`.  A good starting point would be the looking at the methods and functions in `JournalManager.cs`.
+
+Tests are contained in `TBA.Tests` project.
+
+## Downloaded Journal Entries
 
 The general directory structure is indicated below:
 
 ```layout
-[Root Directory] / [Journal ID] / [YYYY-MM] / [YYYY-MM-dd]
+[Root Directory] / [Journal ID] / [yyyy] / [MM] / [dd]
 ```
+
+Tinybeans supports multiple journals under a single account, hence the `[Journal ID]` prefix to downloaded content.
+
+Given the above, a journal entry on January 17, 2019, would cause a directory to be written like this:
+
+`[Root Directory]` \ `[12345]` \ `[2019]` \ `[01]` \ `[17]` \ `[*.jpg|mp4|txt]`
 
 Notes on the above:
 
-* The application will need write/modify permissions to the _Root Directory_ path
-* A directory of _YYYY-MM-dd_ will be made as long as at least one journal entry exists for that day
-* Each _YYYY-MM-dd_ directory will have a JSON file called _YYYY-MM-dd.json_, which contains metadata for the day (e.g. the display order for the journal entries on that day).
-
-Within each _YYYY-MM-dd_ directory, there will be any number of files.  As long as there is a journal item (i.e. image, video, text), you will find the day's JSON metadata file mentioned above.  Each journal artifact will also have its own metadata file.  For example, if image file _AB12CD.jpg_ was found, you would find _AB12CD.jpg.json_ file containing the metadata for it.
+* The _Root Directory_ above will need to be known at runtime.
+  * When debugging from Visual Studio, it will default to `Environment.CurrentDirectory`.
+  * [TODO: Behavior when running without attachment to VS.]
+* The application will need write/modify permissions to the above path
+* A `[dd]` directory
+* Each _YYYY-MM-dd_ directory will have a JSON file called `manifest.[yyyy-MM-dd].json`, which contains metadata about the content in that day.
 
 ## Future Plans
 
@@ -42,4 +52,4 @@ Within each _YYYY-MM-dd_ directory, there will be any number of files.  As long 
 
 Inspiration for this idea was from my wife, who noted that our images/videos were backed up regularly to the cloud, but the "curated journals" we made in Tinybeans were not.
 
-I initially sent a DM to Tinybean's Twitter handle to ask if they had documentation on their API, Swagger docs, etc.  However, they responded that they currently do not have plans to implement this.  After some Google-ing, I found someone else had a similar idea [built in Clojure](https://github.com/oliyh/tinybeans-archive/tree/master/src/tinybeans_archive).  Seeing the source code did provide some guidance on a few of the API calls I would need to make, so thanks to [NAME] for having that repo public!
+I initially sent an email to Tinybeans support, asking whether they had documentation on their API.  They responded that they currently do not have the API documented for public use, and have no plans to implement this.  After some Google-ing, I found someone else had made a similar idea [built in Clojure](https://github.com/oliyh/tinybeans-archive/tree/master/src/tinybeans_archive).  Seeing the source code did provide some guidance on a few of the API calls I would need to make, so kudos to [Oliver](https://github.com/oliyh) for publicly providing some useful information!
