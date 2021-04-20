@@ -31,6 +31,6 @@ namespace TBA.Common
         /// </summary>
         /// <param name="content">The archived content to download, specifically targetting the <seealso cref="ITinybeansEntry.SourceUrl"/> property</param>
         /// <param name="destinationLocation">The location file path to write the content</param>
-        public void Download(ITinybeansEntry content, string destinationLocation);
+        public EntryDownloadInfo Download(ITinybeansEntry content, string destinationLocation);
     }
 }

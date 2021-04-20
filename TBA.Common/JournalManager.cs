@@ -159,20 +159,31 @@ namespace TBA.Common
 
             // write the archives to destination system
             var localPathDictionary = new Dictionary<ulong, string>(archives.Count);
-            var downloadBehavior = new Func<ITinybeansEntry, Tuple<ulong, string>>((archive) =>
+            var downloadBehavior = new Func<ITinybeansEntry, EntryDownloadInfo>((archive) =>
             {
+                //
+                // todo: 1) next step is to modify "Download" below to include the thumbnail downloads
+                //          and then return an EntryDownloadInfo object with data.
+                //       2) to simplify work, move the "if" statements below for thumb downloads into the "Download" method.
+                //
                 var destinationFileLocation = DeterminePathToWriteArchiveContent(archive, Root);
-                _logger.Debug($"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  For archive id '{archive.Id}' (type = {archive.ArchiveType}), the destination path determined to write the file was this: {destinationFileLocation}");
-                if (archive.ArchiveType == ArchiveType.Text)
+                var downloadResults = TinybeansApi.Download(archive, destinationFileLocation);
+
+                string squareThumbnailLocalPath = null;
+                if (!string.IsNullOrWhiteSpace(archive.ThumbnailUrlSquare))
                 {
-                    FileManager.FileWriteText(destinationFileLocation, archive.Caption);
-                }
-                else
-                {
-                    TinybeansApi.Download(archive, destinationFileLocation);
+
                 }
 
-                return new Tuple<ulong, string>(archive.Id, destinationFileLocation);
+                string rectangleThumbnailLocalPath = null;
+                if (!string.IsNullOrWhiteSpace(archive.ThumbnailUrlRectangle))
+                {
+                    var thumbFileName = $"{FileManager.FileGetNameWithoutExtension(destinationFileLocation)}-tr{FileManager.FileGetExtension(archive.ThumbnailUrlRectangle)}";
+                    rectangleThumbnailLocalPath = FileManager.PathCombine(FileManager.DirectoryGetName(destinationFileLocation), thumbFileName);
+
+                }
+
+                return downloadResults;
             });
 
             var sw = new Stopwatch();
@@ -292,6 +303,15 @@ namespace TBA.Common
                 currentYearMonth = currentYearMonth.AddMonths(1);
             }
             while (currentYearMonth <= maxDate.Date);
+
+            //
+            // todo: write yyyy-MM manifests
+            //
+
+            //
+            // todo: write yyyy manifests
+            //
+
             sw.Stop();
             _logger.Info($"Processing time for writing manifests for {archives.Count} entries was {sw.ElapsedMilliseconds} ms");
         }

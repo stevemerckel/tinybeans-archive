@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
@@ -87,14 +88,12 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public void Download(ITinybeansEntry archive, string destinationLocation)
+        public EntryDownloadInfo Download(ITinybeansEntry archive, string destinationLocation)
         {
-            // Rule: we do *not* try downloading content if the SourceUrl is a local path.
-            //       this situation would likely happen if the class was initialized from a local JSON structure.
             if (!archive.SourceUrl.StartsWith("http", StringComparison.InvariantCultureIgnoreCase))
             {
                 _logger.Debug($"The archive {nameof(archive.Id)} of '{archive.Id}' has a local path of '{archive.SourceUrl}', so we are not going to download it.");
-                return;
+                return null;
             }
 
             if (_fileManager.FileExists(destinationLocation))
@@ -103,24 +102,38 @@ namespace TBA.Common
             if (archive.ArchiveType == ArchiveType.Image || archive.ArchiveType == ArchiveType.Video)
             {
                 WebClient wc = null;
-                try
+                var downloadMe = new Tuple<string, string>();
+                if (!string.IsNullOrWhiteSpace(archive.SourceUrl))
+                    downloadMe.Add(archive.SourceUrl);
+                if (!string.IsNullOrWhiteSpace(archive.ThumbnailUrlRectangle))
+                    downloadMe.Add(archive.ThumbnailUrlRectangle);
+                if (!string.IsNullOrWhiteSpace(archive.ThumbnailUrlSquare))
+                    downloadMe.Add(archive.ThumbnailUrlSquare);
+
+                if (!downloadMe.Any())
                 {
-                    wc = new WebClient();
-                    _logger.Debug($"Began download of '{archive.SourceUrl ?? "[NULL]"}' to '{destinationLocation}'");
-                    _fileManager.CreateDirectory(_fileManager.DirectoryGetName(destinationLocation));
-                    wc.DownloadFile(archive.SourceUrl, destinationLocation);
-                    _fileManager.FileUnblock(destinationLocation);
-                    _logger.Debug($"Finished download of '{archive.SourceUrl ?? "[NULL]"}' to '{destinationLocation}'");
+                    _logger.Error($"There were zero files to download for archive '{archive.Id}' on {archive.DisplayedOn.ToString("yyyy-MM-dd")}");
+                    return null;
                 }
-                catch (Exception ex)
+
+                wc = new WebClient();
+                downloadMe.ForEach(d =>
                 {
-                    _logger.Debug($"{nameof(Exception)} thrown trying to download '{archive.SourceUrl ?? "[NULL]"}' -- details: {ex}");
-                    throw;
-                }
-                finally
-                {
-                    wc?.Dispose();
-                }
+                    try
+                    {
+                        _logger.Debug($"Began download of '{d}' to '{destinationLocation}'");
+                        _fileManager.CreateDirectory(_fileManager.DirectoryGetName(destinationLocation));
+                        wc.DownloadFile(d, destinationLocation);
+                        _fileManager.FileUnblock(destinationLocation);
+                        _logger.Debug($"Finished download of '{archive.SourceUrl ?? "[NULL]"}' to '{destinationLocation}'");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Debug($"{nameof(Exception)} thrown trying to download '{archive.SourceUrl ?? "[NULL]"}' -- details: {ex}");
+                        throw;
+                    }
+                });
+                wc?.Dispose();
 
                 return;
             }
