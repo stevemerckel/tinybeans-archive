@@ -30,7 +30,7 @@ namespace TBA.Common
         /// Downloads the content to the returned byte array
         /// </summary>
         /// <param name="content">The archived content to download, specifically targetting the <seealso cref="ITinybeansEntry.SourceUrl"/> property</param>
-        /// <param name="destinationLocation">The location file path to write the content</param>
-        public EntryDownloadInfo Download(ITinybeansEntry content, string destinationLocation);
+        /// <param name="destinationDirectory">The directory to be used for this specific archive</param>
+        public EntryDownloadInfo Download(ITinybeansEntry content, string destinationDirectory);
     }
 }

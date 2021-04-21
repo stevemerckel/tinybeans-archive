@@ -88,7 +88,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public EntryDownloadInfo Download(ITinybeansEntry archive, string destinationLocation)
+        public EntryDownloadInfo Download(ITinybeansEntry archive, string destinationDirectory)
         {
             if (!archive.SourceUrl.StartsWith("http", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -96,36 +96,34 @@ namespace TBA.Common
                 return null;
             }
 
-            if (_fileManager.FileExists(destinationLocation))
-                _fileManager.FileDelete(destinationLocation);
-
             if (archive.ArchiveType == ArchiveType.Image || archive.ArchiveType == ArchiveType.Video)
             {
-                WebClient wc = null;
-                var downloadMe = new Tuple<string, string>();
-                if (!string.IsNullOrWhiteSpace(archive.SourceUrl))
-                    downloadMe.Add(archive.SourceUrl);
-                if (!string.IsNullOrWhiteSpace(archive.ThumbnailUrlRectangle))
-                    downloadMe.Add(archive.ThumbnailUrlRectangle);
-                if (!string.IsNullOrWhiteSpace(archive.ThumbnailUrlSquare))
-                    downloadMe.Add(archive.ThumbnailUrlSquare);
+                var mainContentLocation = DetermineLocalFileLocation(archive.SourceUrl, destinationDirectory);
+                var thumbRectLocation = DetermineLocalFileLocation(archive.ThumbnailUrlRectangle, destinationDirectory, "-tr");
+                var thumbSquareLocation = DetermineLocalFileLocation(archive.ThumbnailUrlRectangle, destinationDirectory, "-ts");
 
-                if (!downloadMe.Any())
+                var downloadMe = new List<Tuple<string, string>>
+                {
+                    new Tuple<string, string>(archive.SourceUrl, destinationDirectory),
+                    new Tuple<string, string>(archive.ThumbnailUrlRectangle, thumbRectLocation),
+                    new Tuple<string, string>(archive.ThumbnailUrlSquare, thumbSquareLocation)
+                };
+
+                if (downloadMe.Select(x => x.Item2).All(string.IsNullOrWhiteSpace))
                 {
                     _logger.Error($"There were zero files to download for archive '{archive.Id}' on {archive.DisplayedOn.ToString("yyyy-MM-dd")}");
                     return null;
                 }
 
-                wc = new WebClient();
                 downloadMe.ForEach(d =>
                 {
                     try
                     {
-                        _logger.Debug($"Began download of '{d}' to '{destinationLocation}'");
-                        _fileManager.CreateDirectory(_fileManager.DirectoryGetName(destinationLocation));
-                        wc.DownloadFile(d, destinationLocation);
-                        _fileManager.FileUnblock(destinationLocation);
-                        _logger.Debug($"Finished download of '{archive.SourceUrl ?? "[NULL]"}' to '{destinationLocation}'");
+                        _logger.Debug($"Began download of '{d.Item1}' to '{d.Item2}'");
+                        _fileManager.CreateDirectory(_fileManager.DirectoryGetName(destinationDirectory));
+                        _webClient.DownloadFile(d.Item1, d.Item2);
+                        _fileManager.FileUnblock(d.Item2);
+                        _logger.Debug($"Finished download of '{d.Item1 ?? "[NULL]"}' to '{d.Item2}'");
                     }
                     catch (Exception ex)
                     {
@@ -133,18 +131,35 @@ namespace TBA.Common
                         throw;
                     }
                 });
-                wc?.Dispose();
 
-                return;
+                return new EntryDownloadInfo(archive.Id, mainContentLocation, thumbRectLocation, thumbSquareLocation);
             }
 
             if (archive.ArchiveType == ArchiveType.Text)
             {
-                _fileManager.FileWriteText(destinationLocation, archive.Caption);
-                return;
+                var fileName = Guid.NewGuid().ToString("N");
+                var destinationLocation = _fileManager.PathCombine(destinationDirectory, $"{fileName}.txt");
+                _fileManager.FileWriteText(destinationDirectory, archive.Caption, System.Text.Encoding.Unicode);
+                return new EntryDownloadInfo(archive.Id, destinationLocation, null, null);
             }
 
             throw new NotSupportedException($"Archive type of {archive.ArchiveType} is not yet supported!!");
+        }
+
+        /// <summary>
+        /// Determines the full file path to write the received archive content
+        /// </summary>
+        /// <param name="remoteUrl">The remote URL of what to download</param>
+        /// <param name="localDirectory">The directory for this specific archive</param>
+        /// <param name="fileNameSuffix">OPTIONAL - an extra suffix to put after the filename, but before the file extension.</param>
+        /// <returns>The full path to where to write the file</returns>
+        private string DetermineLocalFileLocation(string remoteUrl, string localDirectory, string fileNameSuffix = "")
+        {
+            if (string.IsNullOrWhiteSpace(remoteUrl))
+                return null;
+
+            var destinationFileName = $"{_fileManager.FileGetNameWithoutExtension(remoteUrl)}{(string.IsNullOrWhiteSpace(fileNameSuffix) ? string.Empty : fileNameSuffix.Trim())}{_fileManager.FileGetExtension(remoteUrl)}";
+            return _fileManager.PathCombine(localDirectory, destinationFileName);
         }
 
         /// <summary>

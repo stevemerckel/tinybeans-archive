@@ -55,9 +55,9 @@ namespace TBA.Common
         public string Root { get; private set; }
 
         /// <inheritdoc />
-        public void Download(ITinybeansEntry content, string destinationLocation)
+        public EntryDownloadInfo Download(ITinybeansEntry content, string destinationLocation)
         {
-            TinybeansApi.Download(content, destinationLocation);
+            return TinybeansApi.Download(content, destinationLocation);
         }
 
         /// <inheritdoc />
@@ -158,31 +158,11 @@ namespace TBA.Common
             //
 
             // write the archives to destination system
-            var localPathDictionary = new Dictionary<ulong, string>(archives.Count);
+            var localPathDictionary = new List<EntryDownloadInfo>(archives.Count);
             var downloadBehavior = new Func<ITinybeansEntry, EntryDownloadInfo>((archive) =>
             {
-                //
-                // todo: 1) next step is to modify "Download" below to include the thumbnail downloads
-                //          and then return an EntryDownloadInfo object with data.
-                //       2) to simplify work, move the "if" statements below for thumb downloads into the "Download" method.
-                //
-                var destinationFileLocation = DeterminePathToWriteArchiveContent(archive, Root);
-                var downloadResults = TinybeansApi.Download(archive, destinationFileLocation);
-
-                string squareThumbnailLocalPath = null;
-                if (!string.IsNullOrWhiteSpace(archive.ThumbnailUrlSquare))
-                {
-
-                }
-
-                string rectangleThumbnailLocalPath = null;
-                if (!string.IsNullOrWhiteSpace(archive.ThumbnailUrlRectangle))
-                {
-                    var thumbFileName = $"{FileManager.FileGetNameWithoutExtension(destinationFileLocation)}-tr{FileManager.FileGetExtension(archive.ThumbnailUrlRectangle)}";
-                    rectangleThumbnailLocalPath = FileManager.PathCombine(FileManager.DirectoryGetName(destinationFileLocation), thumbFileName);
-
-                }
-
+                var archiveLocalDirectory = DeterminePathToArchiveDirectory(archive, Root);
+                var downloadResults = TinybeansApi.Download(archive, archiveLocalDirectory);
                 return downloadResults;
             });
 
@@ -194,7 +174,7 @@ namespace TBA.Common
                 foreach (var a in archives)
                 {
                     var result = downloadBehavior.Invoke(a);
-                    localPathDictionary.Add(result.Item1, result.Item2);
+                    localPathDictionary.Add(result);
                 }
             }
             else
@@ -222,7 +202,7 @@ namespace TBA.Common
                                 try
                                 {
                                     var result = downloadBehavior.Invoke(x);
-                                    localPathDictionary.Add(result.Item1, result.Item2);
+                                    localPathDictionary.Add(result);
                                     isProcessed = true;
                                 }
                                 catch (WebException webEx)
@@ -314,21 +294,6 @@ namespace TBA.Common
 
             sw.Stop();
             _logger.Info($"Processing time for writing manifests for {archives.Count} entries was {sw.ElapsedMilliseconds} ms");
-        }
-
-        /// <summary>
-        /// Determines the full file path to write the received archive content
-        /// </summary>
-        /// <param name="archive">The archive to write</param>
-        /// <param name="root">The starting directory</param>
-        /// <returns>The full path to where to write the file</returns>
-        private string DeterminePathToWriteArchiveContent(ITinybeansEntry archive, string root)
-        {
-            var targetDirectory = DeterminePathToArchiveDirectory(archive, root);
-            var destinationFileName = archive.ArchiveType == ArchiveType.Text
-                ? $"{Guid.NewGuid().ToString("D")}.txt"
-                : $"{FileManager.FileGetNameWithoutExtension(archive.SourceUrl)}{FileManager.FileGetExtension(archive.SourceUrl)}";
-            return FileManager.PathCombine(targetDirectory, destinationFileName);
         }
 
         /// <summary>
