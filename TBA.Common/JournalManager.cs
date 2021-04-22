@@ -276,6 +276,11 @@ namespace TBA.Common
                     FileManager.FileWriteText(dayManifestLoc, JsonConvert.SerializeObject(currentDayEntries, Formatting.Indented), System.Text.Encoding.Unicode);
                 }
 
+                //
+                // todo:    find an archive image/video entry with an emoji
+                //          then ensure the emoji is written as unicode (i.e. "\u" prefix)
+                //
+
                 _logger.Debug($"Finished writing manifest for days in '{currentMonthArchives.First().DisplayedOn.ToString("yyyy-MM")}'");
 
                 // add a month to "current" tracker

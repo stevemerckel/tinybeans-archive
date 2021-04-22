@@ -67,10 +67,6 @@ namespace TBA.Common
             JournalId = journalId;
             SortOverride = sortOrder >= 0 ? sortOrder : (int?)null;
             Timestamp = timestamp;
-
-            // todo: re-enable the section below once JsonConstructor pass-through is tested.
-            //if (ArchiveType != ArchiveType.Text && SourceUrl == null)
-            //    throw new ArgumentException($"You must provide a Source URL for {nameof(ArchiveType)}s of {nameof(ArchiveType.Image)} and {nameof(ArchiveType.Video)} !!");
         }
 
         /// <inheritdoc />

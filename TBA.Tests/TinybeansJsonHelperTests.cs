@@ -57,9 +57,16 @@ namespace TBA.Tests
                 {
                     Assert.IsTrue(d.DisplayedOn > new DateTime(1900, 1, 1));
 
-                    // todo: enable section below once URL pass-through is working
-                    //Assert.IsFalse(string.IsNullOrWhiteSpace(dayEntry.SourceUrl));
-                    //Assert.DoesNotThrow(() => new Uri(dayEntry.SourceUrl));
+                    if (d.ArchiveType == ArchiveType.Text)
+                    {
+                        Assert.IsTrue(string.IsNullOrWhiteSpace(d.SourceUrl));
+                        Assert.Throws<ArgumentNullException>(() => new Uri(d.SourceUrl));
+                    }
+                    else
+                    {
+                        Assert.IsFalse(string.IsNullOrWhiteSpace(d.SourceUrl));
+                        Assert.DoesNotThrow(() => new Uri(d.SourceUrl));
+                    }
                 });
             });
         }
@@ -79,9 +86,16 @@ namespace TBA.Tests
                 {
                     Assert.IsTrue(yme.DisplayedOn > new DateTime(1970, 1, 1));
 
-                    // todo: enable section below once URL pass-through is working
-                    //Assert.IsFalse(string.IsNullOrWhiteSpace(dayEntry.SourceUrl));
-                    //Assert.DoesNotThrow(() => new Uri(dayEntry.SourceUrl));
+                    if (yme.ArchiveType == ArchiveType.Text)
+                    {
+                        Assert.True(string.IsNullOrWhiteSpace(yme.SourceUrl));
+                        Assert.Throws<ArgumentNullException>(() => new Uri(yme.SourceUrl));
+                    }
+                    else
+                    {
+                        Assert.IsFalse(string.IsNullOrWhiteSpace(yme.SourceUrl));
+                        Assert.DoesNotThrow(() => new Uri(yme.SourceUrl));
+                    }
                 });
             });
         }

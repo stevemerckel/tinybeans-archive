@@ -140,6 +140,10 @@ namespace TBA.Common
 
             if (archive.ArchiveType == ArchiveType.Text)
             {
+                //
+                // todo:    find an archive text entry that has an emoji
+                //          then validate that the meta is written in unicode (i.e. "\u" prefix)
+
                 var fileName = Guid.NewGuid().ToString("N");
                 var destinationLocation = _fileManager.PathCombine(destinationDirectory, $"{fileName}.txt");
                 _fileManager.FileWriteText(destinationDirectory, archive.Caption, System.Text.Encoding.Unicode);
