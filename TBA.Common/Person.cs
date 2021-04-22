@@ -7,12 +7,34 @@ namespace TBA.Common
     /// </summary>
     public abstract class Person
     {
+        /// <summary>
+        /// Unique ID for this person
+        /// </summary>
         public ulong Id { get; set; }
+
+        /// <summary>
+        /// First name (given name)
+        /// </summary>
         public string FirstName { get; set; }
+
+        /// <summary>
+        /// Last name (surname)
+        /// </summary>
         public string LastName { get; set; }
-        public string FullName => FirstName + " " + LastName;
+
+        /// <summary>
+        /// Friendly presentation the full name
+        /// </summary>
+        public string FullName => FirstName?.Trim() + " " + LastName?.Trim();
+
+        /// <summary>
+        /// The person's gender
+        /// </summary>
         public Gender Gender { get; set; }
 
+        /// <summary>
+        /// Date when the person was born -- assume it is local
+        /// </summary>
         public DateTime BornOn { get; set; }
 
         /// <summary>
@@ -25,15 +47,12 @@ namespace TBA.Common
                 throw new ArgumentException($"{nameof(genderString)} is missing!");
 
             var firstCharacter = genderString.Trim().Substring(0, 1).ToUpper();
-            switch (firstCharacter)
+            return firstCharacter switch
             {
-                case "M":
-                    return Gender.Male;
-                case "F":
-                    return Gender.Female;
-                default:
-                    throw new ArgumentException($"Unable to convert value '{firstCharacter}' into type {nameof(Gender)} !!");
-            }
+                "M" => Gender.Male,
+                "F" => Gender.Female,
+                _ => throw new ArgumentException($"Unable to convert value '{firstCharacter}' into type {nameof(Gender)} !!"),
+            };
         }
     }
 }

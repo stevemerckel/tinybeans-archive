@@ -5,6 +5,7 @@ using System.Diagnostics;
 namespace TBA.Common
 {
     /// <inheritdoc />
+    [DebuggerDisplay(nameof(ApiBaseUrl) + "={ApiBaseUrl} -- " + nameof(MaxThreadCount) + "={MaxThreadCount}")]
     public class RuntimeSettings : IRuntimeSettings
     {
         /// <summary>

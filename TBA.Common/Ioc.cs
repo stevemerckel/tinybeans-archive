@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using Ninject.Modules;
 
 namespace TBA.Common

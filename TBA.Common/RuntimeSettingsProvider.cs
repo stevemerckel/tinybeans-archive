@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
 using Newtonsoft.Json;
 
 namespace TBA.Common
@@ -12,6 +11,12 @@ namespace TBA.Common
         private bool _isInitialized;
         private readonly object _lock = new object();
         private IRuntimeSettings _runtimeSettings;
+        private readonly IFileManager _fileManager;
+
+        public RuntimeSettingsProvider(IFileManager fileManager)
+        {
+            _fileManager = fileManager;
+        }
 
         /// <inheritdoc />
         public IRuntimeSettings GetRuntimeSettings()
@@ -23,12 +28,12 @@ namespace TBA.Common
 
                 // read and process file
                 const string ExpectedFileName = "runtime.settings";
-                var runtimeDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                var settingsLocation = Path.Combine(runtimeDirectory, ExpectedFileName);
-                if (!File.Exists(settingsLocation))
+                var runtimeDirectory = _fileManager.DirectoryGetName(Assembly.GetExecutingAssembly().Location);
+                var settingsLocation = _fileManager.PathCombine(runtimeDirectory, ExpectedFileName);
+                if (!_fileManager.FileExists(settingsLocation))
                     throw new SettingsFailureException($"Could not find '{ExpectedFileName}' in '{runtimeDirectory}' !!");
 
-                var fileContents = File.ReadAllText(settingsLocation);
+                var fileContents = _fileManager.FileReadAllText(settingsLocation);
                 if (string.IsNullOrWhiteSpace(fileContents))
                     throw new SettingsFailureException($"No content was found in file: {settingsLocation}");
 

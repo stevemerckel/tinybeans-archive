@@ -8,7 +8,9 @@ using Trinet.Core.IO.Ntfs;
 
 namespace TBA.Common
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Implementation of <see cref="IFileManager"/> for working with files/directories on a Windows-based system.
+    /// </summary>
     public sealed class WindowsFileSystemManager : IFileManager
     {
         /// <inheritdoc />

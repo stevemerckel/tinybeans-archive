@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace TBA.Common
+﻿namespace TBA.Common
 {
     /// <summary>
     /// Methods and functions for working with file systems
