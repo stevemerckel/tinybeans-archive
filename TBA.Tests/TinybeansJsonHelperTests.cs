@@ -53,21 +53,7 @@ namespace TBA.Tests
             Assert.IsTrue(dayEntries.Count > 0);
             dayEntries.ForEach(d =>
             {
-                Assert.Multiple(() =>
-                {
-                    Assert.IsTrue(d.DisplayedOn > new DateTime(1900, 1, 1));
-
-                    if (d.ArchiveType == ArchiveType.Text)
-                    {
-                        Assert.IsTrue(string.IsNullOrWhiteSpace(d.SourceUrl));
-                        Assert.Throws<ArgumentNullException>(() => new Uri(d.SourceUrl));
-                    }
-                    else
-                    {
-                        Assert.IsFalse(string.IsNullOrWhiteSpace(d.SourceUrl));
-                        Assert.DoesNotThrow(() => new Uri(d.SourceUrl));
-                    }
-                });
+                ValidateArchiveEntryDataAgainstRules(d);
             });
         }
 
@@ -82,21 +68,7 @@ namespace TBA.Tests
             Assert.IsTrue(yearMonthEntries.Count > 0);
             yearMonthEntries.ForEach(yme =>
             {
-                Assert.Multiple(() =>
-                {
-                    Assert.IsTrue(yme.DisplayedOn > new DateTime(1970, 1, 1));
-
-                    if (yme.ArchiveType == ArchiveType.Text)
-                    {
-                        Assert.True(string.IsNullOrWhiteSpace(yme.SourceUrl));
-                        Assert.Throws<ArgumentNullException>(() => new Uri(yme.SourceUrl));
-                    }
-                    else
-                    {
-                        Assert.IsFalse(string.IsNullOrWhiteSpace(yme.SourceUrl));
-                        Assert.DoesNotThrow(() => new Uri(yme.SourceUrl));
-                    }
-                });
+                ValidateArchiveEntryDataAgainstRules(yme);
             });
         }
 
@@ -137,6 +109,39 @@ namespace TBA.Tests
         public void Test_Deserialize_JournalSummary_Fail(string json)
         {
             Assert.Catch(() => _sut.ParseJournalSummaries(json));
+        }
+
+        /// <summary>
+        /// Conducts a primitive set of inspections against the properties for the archive entry
+        /// </summary>
+        /// <param name="entry">The archive entry to inspect</param>
+        private void ValidateArchiveEntryDataAgainstRules(ITinybeansEntry entry)
+        {
+            Assert.Multiple(() =>
+            {
+                // global checks
+                Assert.IsTrue(entry.DisplayedOn > new DateTime(1970, 1, 1));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(entry.JournalId));
+                Assert.IsTrue(ulong.TryParse(entry.JournalId, out ulong temp));
+
+                // per-archive-type checks
+                if (entry.ArchiveType == ArchiveType.Text)
+                {
+                    Assert.True(string.IsNullOrWhiteSpace(entry.SourceUrl));
+                    Assert.Throws<ArgumentNullException>(() => new Uri(entry.SourceUrl));
+                    Assert.IsFalse(string.IsNullOrWhiteSpace(entry.Caption));
+                    return;
+                }
+
+                if (entry.ArchiveType == ArchiveType.Image || entry.ArchiveType == ArchiveType.Video)
+                {
+                    Assert.IsFalse(string.IsNullOrWhiteSpace(entry.SourceUrl));
+                    Assert.DoesNotThrow(() => new Uri(entry.SourceUrl));
+                    return;
+                }
+
+                throw new NotSupportedException($"Incomplete validation checks for archive type '{Enum.GetName(typeof(ArchiveType), entry.ArchiveType)}' !!");
+            });
         }
     }
 }
