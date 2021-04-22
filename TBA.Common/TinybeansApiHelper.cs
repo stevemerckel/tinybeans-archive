@@ -119,7 +119,7 @@ namespace TBA.Common
                     downloadMe.ForEach(d =>
                     {
                         _logger.Debug($"Began download of '{d.Item1}' to '{d.Item2}'");
-                        _fileManager.CreateDirectory(_fileManager.DirectoryGetName(destinationDirectory));
+                        _fileManager.CreateDirectory(destinationDirectory);
                         wc.DownloadFile(d.Item1, d.Item2);
                         _fileManager.FileUnblock(d.Item2);
                         _logger.Debug($"Finished download of '{d.Item1 ?? "[NULL]"}' to '{d.Item2}'");
