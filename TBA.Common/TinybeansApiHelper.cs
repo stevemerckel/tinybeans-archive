@@ -18,7 +18,6 @@ namespace TBA.Common
         private readonly HttpClient _httpClient;
         private readonly ITinybeansJsonHelper _jsonHelper;
         private readonly IFileManager _fileManager;
-        private readonly WebClient _webClient;
 
         /// <summary>
         /// Default ctor
@@ -36,9 +35,6 @@ namespace TBA.Common
             {
                 BaseAddress = new Uri(_runtimeSettings.ApiBaseUrl)
             };
-
-            // init web client
-            _webClient = new WebClient();
         }
 
         /// <inheritdoc />
@@ -104,7 +100,7 @@ namespace TBA.Common
 
                 var downloadMe = new List<Tuple<string, string>>
                 {
-                    new Tuple<string, string>(archive.SourceUrl, destinationDirectory),
+                    new Tuple<string, string>(archive.SourceUrl, mainContentLocation),
                     new Tuple<string, string>(archive.ThumbnailUrlRectangle, thumbRectLocation),
                     new Tuple<string, string>(archive.ThumbnailUrlSquare, thumbSquareLocation)
                 };
@@ -115,22 +111,29 @@ namespace TBA.Common
                     return null;
                 }
 
-                downloadMe.ForEach(d =>
+                WebClient wc = null;
+
+                try
                 {
-                    try
+                    wc = new WebClient();
+                    downloadMe.ForEach(d =>
                     {
                         _logger.Debug($"Began download of '{d.Item1}' to '{d.Item2}'");
                         _fileManager.CreateDirectory(_fileManager.DirectoryGetName(destinationDirectory));
-                        _webClient.DownloadFile(d.Item1, d.Item2);
+                        wc.DownloadFile(d.Item1, d.Item2);
                         _fileManager.FileUnblock(d.Item2);
                         _logger.Debug($"Finished download of '{d.Item1 ?? "[NULL]"}' to '{d.Item2}'");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Debug($"{nameof(Exception)} thrown trying to download '{archive.SourceUrl ?? "[NULL]"}' -- details: {ex}");
-                        throw;
-                    }
-                });
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.Debug($"{nameof(Exception)} thrown trying to download '{archive.SourceUrl ?? "[NULL]"}' -- details: {ex}");
+                    throw;
+                }
+                finally
+                {
+                    wc?.Dispose();
+                }
 
                 return new EntryDownloadInfo(archive.Id, mainContentLocation, thumbRectLocation, thumbSquareLocation);
             }
