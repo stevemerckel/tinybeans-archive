@@ -17,7 +17,13 @@ namespace TBA.Tests
         {
             _tinybeansJsonHelper = new TinybeansJsonHelper(Logger);
 
-            throw new NotImplementedException();
+            throw new NotImplementedException("This test class is not ready for primetime... yet.");
+        }
+
+        [Test]
+        public void Test_JournalSummary_Success()
+        {
+            JournalSummary summary = null;
         }
     }
 }

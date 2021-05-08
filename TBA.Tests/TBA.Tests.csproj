@@ -9,7 +9,6 @@
   <ItemGroup>
     <None Remove="json-samples\day-entries.json" />
     <None Remove="json-samples\journal-summary.json" />
-    <None Remove="json-samples\year-month-entries.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,9 +16,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="json-samples\journal-summary.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="json-samples\year-month-entries.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

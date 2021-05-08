@@ -9,12 +9,11 @@ namespace TBA.Tests
     public class TinybeansJsonHelperTests : TestBase
     {
         private const string DayEntriesFileName = "day-entries.json";
-        private const string YearMonthEntriesFileName = "year-month-entries.json";
         private const string JournalSummaryFileName = "journal-summary.json";
         private readonly ITinybeansJsonHelper _sut;
         private readonly string _jsonSamplesLocation = Path.Combine(TestContext.CurrentContext.TestDirectory, "json-samples");
-        const string ValidButNotAlignedJson = @"{ ""one"": 1, ""two"": 2, ""three"":3 }";
-        const string InvalidJson = @"This Is Not Json";
+        const string JsonStructureValidButNotAligned = @"{ ""one"": 1, ""two"": 2, ""three"": 3 }";
+        const string JsonInvalid = @"This Is Not Json";
 
         public TinybeansJsonHelperTests()
         {
@@ -28,7 +27,6 @@ namespace TBA.Tests
         }
 
         [TestCase(DayEntriesFileName)]
-        [TestCase(YearMonthEntriesFileName)]
         [TestCase(JournalSummaryFileName)]
         public void Test_JsonSamplesHaveContent_Success(string fileName)
         {
@@ -58,21 +56,6 @@ namespace TBA.Tests
         }
 
         [Test]
-        public void Test_Deserialize_YearMonthEntries_Success()
-        {
-            var jsonLocation = Path.Combine(_jsonSamplesLocation, YearMonthEntriesFileName);
-            var json = File.ReadAllText(jsonLocation);
-
-            var yearMonthEntries = _sut.ParseArchivedContent(json);
-            Assert.IsNotNull(yearMonthEntries);
-            Assert.IsTrue(yearMonthEntries.Count > 0);
-            yearMonthEntries.ForEach(yme =>
-            {
-                ValidateArchiveEntryDataAgainstRules(yme);
-            });
-        }
-
-        [Test]
         public void Test_Deserialize_JournalSummary_Success()
         {
             var jsonLocation = Path.Combine(_jsonSamplesLocation, JournalSummaryFileName);
@@ -90,22 +73,22 @@ namespace TBA.Tests
             });
         }
 
-        [TestCase(InvalidJson)]
-        [TestCase(ValidButNotAlignedJson)]
+        [TestCase(JsonInvalid)]
+        [TestCase(JsonStructureValidButNotAligned)]
         public void Test_Deserialize_DayEntries_Fail(string json)
         {
             Assert.Catch(() => _sut.ParseArchivedContent(json));
         }
 
-        [TestCase(InvalidJson)]
-        [TestCase(ValidButNotAlignedJson)]
+        [TestCase(JsonInvalid)]
+        [TestCase(JsonStructureValidButNotAligned)]
         public void Test_Deserialize_YearMonthEntries_Fail(string json)
         {
             Assert.Catch(() => _sut.ParseArchivedContent(json));
         }
 
-        [TestCase(InvalidJson)]
-        [TestCase(ValidButNotAlignedJson)]
+        [TestCase(JsonInvalid)]
+        [TestCase(JsonStructureValidButNotAligned)]
         public void Test_Deserialize_JournalSummary_Fail(string json)
         {
             Assert.Catch(() => _sut.ParseJournalSummaries(json));

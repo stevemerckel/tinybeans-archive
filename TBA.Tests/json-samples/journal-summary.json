@@ -2,29 +2,29 @@
     "status": "ok",
     "journals": [
         {
-            "URL": "https://tinybeans.com/api/1/journals/917506",
-            "id": 917506,
-            "title": "Merckel Family",
+            "URL": "https://tinybeans.com/api/1/journals/567123",
+            "id": 567123,
+            "title": "NUnit Family",
             "timestamp": 1503286113784,
             "disableComments": false,
             "disableAnonymousComments": false,
             "disableDownloads": false,
             "deleted": false,
             "user": {
-                "firstName": "Meghan",
+                "firstName": "Mother",
                 "avatars": {
-                    "o": "https://tinybeans-public.s3-us-west-2.amazonaws.com/images/avatar-user-o.png",
-                    "s": "https://tinybeans-public.s3-us-west-2.amazonaws.com/images/avatar-user-s.png",
-                    "m": "https://tinybeans-public.s3-us-west-2.amazonaws.com/images/avatar-user-m.png",
-                    "l": "https://tinybeans-public.s3-us-west-2.amazonaws.com/images/avatar-user-l.png"
+                    "o": "https://tinybeans.com/path/to/bogus/avatar-user-o.png",
+                    "s": "https://tinybeans.com/path/to/bogus/avatar-user-s.png",
+                    "m": "https://tinybeans.com/path/to/bogus/avatar-user-m.png",
+                    "l": "https://tinybeans.com/path/to/bogus/avatar-user-l.png"
                 },
                 "deleted": false,
-                "id": 1876416,
-                "fullName": "Meghan Merckel",
-                "lastName": "Merckel",
-                "URL": "https://tinybeans.com/api/1/users/1876416",
-                "username": "minimerckel@charter.net",
-                "emailAddress": "minimerckel@charter.net",
+                "id": 1234567,
+                "fullName": "Mother NUnit",
+                "lastName": "NUnit",
+                "URL": "https://tinybeans.com/api/1/users/1234567",
+                "username": "registration-email@domain.com",
+                "emailAddress": "registration-email@domain.com",
                 "campaign": "",
                 "timestamp": 1503286113396,
                 "lastUpdatedTimestamp": 1602769262816,
@@ -56,43 +56,43 @@
                 "emailWeeklySummary": true,
                 "emailOptOut": false,
                 "emailMarketingOptOut": false,
-                "referralCode": "75J2VZ",
-                "referralUrl": "https://tinybeans.app.link/JN85UDpXZz?referralCode\u003d75J2VZ"
+                "referralCode": "ABC123",
+                "referralUrl": "https://tinybeans.app.link/referral/code?meh"
             },
             "children": [
                 {
-                    "URL": "https://tinybeans.com/api/1/children/842332",
-                    "id": 842332,
-                    "firstName": "Cole",
-                    "lastName": "Merckel",
-                    "fullName": "Cole Merckel",
+                    "URL": "https://tinybeans.com/api/1/children/987465",
+                    "id": 987465,
+                    "firstName": "Baby01",
+                    "lastName": "NUnit",
+                    "fullName": "Baby01 NUnit",
                     "gender": "MALE",
                     "dob": "2017-07-14",
                     "bio": "",
                     "timestamp": 1503286295070,
                     "lastUpdatedTimestamp": 1503286295073,
                     "avatars": {
-                        "o": "https://d32onc8xm8gfkc.cloudfront.net/children/842332/avatars/fb63ca00-fe82-4e39-b5ce-d0f654bc5401-o.jpg",
-                        "s": "https://d32onc8xm8gfkc.cloudfront.net/children/842332/avatars/fb63ca00-fe82-4e39-b5ce-d0f654bc5401-s.jpg",
-                        "m": "https://d32onc8xm8gfkc.cloudfront.net/children/842332/avatars/fb63ca00-fe82-4e39-b5ce-d0f654bc5401-m.jpg",
-                        "l": "https://d32onc8xm8gfkc.cloudfront.net/children/842332/avatars/fb63ca00-fe82-4e39-b5ce-d0f654bc5401-l.jpg"
+                        "o": "https://tinybeans.com/path/to/bogus/avatars/fb63ca00-fe82-4e39-b5ce-d0f654bc5401-o.jpg",
+                        "s": "https://tinybeans.com/path/to/bogus/avatars/fb63ca00-fe82-4e39-b5ce-d0f654bc5401-s.jpg",
+                        "m": "https://tinybeans.com/path/to/bogus/avatars/fb63ca00-fe82-4e39-b5ce-d0f654bc5401-m.jpg",
+                        "l": "https://tinybeans.com/path/to/bogus/avatars/fb63ca00-fe82-4e39-b5ce-d0f654bc5401-l.jpg"
                     },
                     "deleted": false,
                     "user": {
-                        "firstName": "Meghan",
+                        "firstName": "Mother",
                         "avatars": {
-                            "o": "https://tinybeans-public.s3-us-west-2.amazonaws.com/images/avatar-user-o.png",
-                            "s": "https://tinybeans-public.s3-us-west-2.amazonaws.com/images/avatar-user-s.png",
-                            "m": "https://tinybeans-public.s3-us-west-2.amazonaws.com/images/avatar-user-m.png",
-                            "l": "https://tinybeans-public.s3-us-west-2.amazonaws.com/images/avatar-user-l.png"
+                            "o": "https://tinybeans.com/path/to/bogus/avatar-user-o.png",
+                            "s": "https://tinybeans.com/path/to/bogus/avatar-user-s.png",
+                            "m": "https://tinybeans.com/path/to/bogus/avatar-user-m.png",
+                            "l": "https://tinybeans.com/path/to/bogus/avatar-user-l.png"
                         },
                         "deleted": false,
-                        "id": 1876416,
-                        "fullName": "Meghan Merckel",
-                        "lastName": "Merckel",
-                        "URL": "https://tinybeans.com/api/1/users/1876416",
-                        "username": "minimerckel@charter.net",
-                        "emailAddress": "minimerckel@charter.net",
+                        "id": 1234567,
+                        "fullName": "Mother NUnit",
+                        "lastName": "NUnit",
+                        "URL": "https://tinybeans.com/api/1/users/1234567",
+                        "username": "registration-email@domain.com",
+                        "emailAddress": "registration-email@domain.com",
                         "campaign": "",
                         "timestamp": 1503286113396,
                         "lastUpdatedTimestamp": 1602769262816,
@@ -124,43 +124,43 @@
                         "emailWeeklySummary": true,
                         "emailOptOut": false,
                         "emailMarketingOptOut": false,
-                        "referralCode": "75J2VZ",
-                        "referralUrl": "https://tinybeans.app.link/JN85UDpXZz?referralCode\u003d75J2VZ"
+                        "referralCode": "1234",
+                        "referralUrl": "https://tinybeans.app.link/referral/code?meh"
                     }
                 },
                 {
-                    "URL": "https://tinybeans.com/api/1/children/1023186",
-                    "id": 1023186,
-                    "firstName": "Ramona",
-                    "lastName": "Merckel",
-                    "fullName": "Ramona Merckel",
+                    "URL": "https://tinybeans.com/api/1/children/5678907",
+                    "id": 5678907,
+                    "firstName": "Baby02",
+                    "lastName": "NUnit",
+                    "fullName": "Baby02 NUnit",
                     "gender": "FEMALE",
                     "dob": "2018-09-14",
                     "bio": "",
                     "timestamp": 1537200997784,
                     "lastUpdatedTimestamp": 1537201701524,
                     "avatars": {
-                        "o": "https://d32onc8xm8gfkc.cloudfront.net/children/1023186/avatars/e333003b-47c1-4185-8a83-c2e89764c4c1-o.jpg",
-                        "s": "https://d32onc8xm8gfkc.cloudfront.net/children/1023186/avatars/e333003b-47c1-4185-8a83-c2e89764c4c1-s.jpg",
-                        "m": "https://d32onc8xm8gfkc.cloudfront.net/children/1023186/avatars/e333003b-47c1-4185-8a83-c2e89764c4c1-m.jpg",
-                        "l": "https://d32onc8xm8gfkc.cloudfront.net/children/1023186/avatars/e333003b-47c1-4185-8a83-c2e89764c4c1-l.jpg"
+                        "o": "https://tinybeans.com/path/to/bogus/avatars/e333003b-47c1-4185-8a83-c2e89764c4c1-o.jpg",
+                        "s": "https://tinybeans.com/path/to/bogus/avatars/e333003b-47c1-4185-8a83-c2e89764c4c1-s.jpg",
+                        "m": "https://tinybeans.com/path/to/bogus/avatars/e333003b-47c1-4185-8a83-c2e89764c4c1-m.jpg",
+                        "l": "https://tinybeans.com/path/to/bogus/avatars/e333003b-47c1-4185-8a83-c2e89764c4c1-l.jpg"
                     },
                     "deleted": false,
                     "user": {
-                        "firstName": "Steve",
+                        "firstName": "Father",
                         "avatars": {
-                            "o": "https://d32onc8xm8gfkc.cloudfront.net/users/1903096/avatars/e77d6c60-58d8-4b66-a0fe-cf486b87d6c8-o.jpg",
-                            "s": "https://d32onc8xm8gfkc.cloudfront.net/users/1903096/avatars/e77d6c60-58d8-4b66-a0fe-cf486b87d6c8-s.jpg",
-                            "m": "https://d32onc8xm8gfkc.cloudfront.net/users/1903096/avatars/e77d6c60-58d8-4b66-a0fe-cf486b87d6c8-m.jpg",
-                            "l": "https://d32onc8xm8gfkc.cloudfront.net/users/1903096/avatars/e77d6c60-58d8-4b66-a0fe-cf486b87d6c8-l.jpg"
+                            "o": "https://tinybeans.com/path/to/bogus/avatars/e77d6c60-58d8-4b66-a0fe-cf486b87d6c8-o.jpg",
+                            "s": "https://tinybeans.com/path/to/bogus/avatars/e77d6c60-58d8-4b66-a0fe-cf486b87d6c8-s.jpg",
+                            "m": "https://tinybeans.com/path/to/bogus/avatars/e77d6c60-58d8-4b66-a0fe-cf486b87d6c8-m.jpg",
+                            "l": "https://tinybeans.com/path/to/bogus/avatars/e77d6c60-58d8-4b66-a0fe-cf486b87d6c8-l.jpg"
                         },
                         "deleted": false,
                         "id": 1903096,
-                        "fullName": "Steve Merckel",
-                        "lastName": "Merckel",
+                        "fullName": "Father NUnit",
+                        "lastName": "NUnit",
                         "URL": "https://tinybeans.com/api/1/users/1903096",
-                        "username": "ssm118s@yahoo.com",
-                        "emailAddress": "ssm118s@yahoo.com",
+                        "username": "father-email@domain.com",
+                        "emailAddress": "father-email@domain.com",
                         "campaign": "",
                         "timestamp": 1504322376120,
                         "lastUpdatedTimestamp": 1603230106088,
@@ -192,7 +192,7 @@
                         "emailWeeklySummary": false,
                         "emailOptOut": false,
                         "emailMarketingOptOut": false,
-                        "referralCode": "9B4RWB",
+                        "referralCode": "ABC123",
                         "referralUrl": "https://tinybeans.app.link/JN85UDpXZz?referralCode\u003d9B4RWB"
                     }
                 }
@@ -200,14 +200,14 @@
             "coverTheme": {
                 "name": "THEME_1",
                 "label": "Plain Blue",
-                "url": "https://tinybeans-public.s3-us-west-2.amazonaws.com/images/journalCovers/front-cover-1.jpg"
+                "url": "https://tinybeans.com/path/to/bogus/journalCovers/front-cover-1.jpg"
             },
             "features": [
                 {
                     "URL": "https://tinybeans.com/api/store/feature/6",
                     "id": 6,
-                    "dateCreated": "2015-04-09 00:00:00.0",
-                    "lastUpdated": "2018-11-01 07:37:48.0",
+                    "dateCreated": "2020-11-28 00:00:00.0",
+                    "lastUpdated": "2020-11-28 07:37:48.0",
                     "name": "Premium Features",
                     "description": "Features available on the Premium Plan",
                     "scopeMap": "{\"Tier\":\"premium\",\r\n\"Video\":{\"uploadLength\":300, \"playbackLength\":300},\r\n\"MultipleUpload\": {\"enabled\":true,\"maxFiles\":20},\r\n\"PhotoCollection\": {\"enabled\":true,\"maxEntriesInCollection\": 1000, \"maxCollections\": 1000},\r\n\"JournalExport\":{\"enabled\":true},\r\n\"JournalSearch\":{\"enabled\":true},\r\n\"PrivateMode\":{\"enabled\":true}\r\n}"
@@ -218,8 +218,8 @@
                 "id": 74335,
                 "startDate": 1539172800000,
                 "expiryDate": 4663224000000,
-                "startDateDisplay": "10 Oct 2018",
-                "expiryDateDisplay": "09 Oct 2117",
+                "startDateDisplay": "28 Nov 2020",
+                "expiryDateDisplay": "27 Nov 2120",
                 "status": "ACTIVE",
                 "renewal": "AUTO",
                 "subscriptionProductId": 12,
@@ -228,8 +228,8 @@
                     "code": "LIFETIME",
                     "name": "lifetime",
                     "description": "Lifetime subscription to Premium",
-                    "dateCreated": "2016-08-25 00:00:00.0",
-                    "lastUpdated": "2016-08-25 07:58:54.0",
+                    "dateCreated": "2020-11-28 00:00:00.0",
+                    "lastUpdated": "2020-11-28 07:58:54.0",
                     "productStatus": "AVAILABLE",
                     "codeAppStore": "",
                     "codePlayStore": "",
@@ -238,7 +238,7 @@
                     "price": {
                         "URL": "https://tinybeans.com/api/store/price/8",
                         "id": 8,
-                        "dateCreated": "2016-05-27 03:45:16.0",
+                        "dateCreated": "2020-11-28 03:45:16.0",
                         "amountInCents": 25000,
                         "amountInDollarsAndCents": 250.0,
                         "taxAsPercentage": 0.0,
@@ -256,25 +256,25 @@
                     },
                     "features": [
                         {
-                            "URL": "https://tinybeans.com/api/store/feature/6",
+                            "URL": "https://tinybeans.com/api/store/feature/42",
                             "id": 6,
-                            "dateCreated": "2015-04-09 00:00:00.0",
-                            "lastUpdated": "2018-11-01 07:37:48.0",
+                            "dateCreated": "2020-11-28 00:00:00.0",
+                            "lastUpdated": "2020-11-28 07:37:48.0",
                             "name": "Premium Features",
                             "description": "Features available on the Premium Plan",
                             "scopeMap": "{\"Tier\":\"premium\",\r\n\"Video\":{\"uploadLength\":300, \"playbackLength\":300},\r\n\"MultipleUpload\": {\"enabled\":true,\"maxFiles\":20},\r\n\"PhotoCollection\": {\"enabled\":true,\"maxEntriesInCollection\": 1000, \"maxCollections\": 1000},\r\n\"JournalExport\":{\"enabled\":true},\r\n\"JournalSearch\":{\"enabled\":true},\r\n\"PrivateMode\":{\"enabled\":true}\r\n}"
                         }
                     ]
                 },
-                "journalId": 917506
+                "journalId": 567123
             },
             "latestSubscription": {
                 "URL": "https://tinybeans.com/api/store/subscription/74335",
                 "id": 74335,
                 "startDate": 1539172800000,
                 "expiryDate": 4663224000000,
-                "startDateDisplay": "10 Oct 2018",
-                "expiryDateDisplay": "09 Oct 2117",
+                "startDateDisplay": "28 Nov 2020",
+                "expiryDateDisplay": "27 Nov 2120",
                 "status": "ACTIVE",
                 "renewal": "AUTO",
                 "subscriptionProductId": 12,
@@ -283,8 +283,8 @@
                     "code": "LIFETIME",
                     "name": "lifetime",
                     "description": "Lifetime subscription to Premium",
-                    "dateCreated": "2016-08-25 00:00:00.0",
-                    "lastUpdated": "2016-08-25 07:58:54.0",
+                    "dateCreated": "2020-11-28 00:00:00.0",
+                    "lastUpdated": "2020-11-28 07:58:54.0",
                     "productStatus": "AVAILABLE",
                     "codeAppStore": "",
                     "codePlayStore": "",
@@ -293,7 +293,7 @@
                     "price": {
                         "URL": "https://tinybeans.com/api/store/price/8",
                         "id": 8,
-                        "dateCreated": "2016-05-27 03:45:16.0",
+                        "dateCreated": "2020-11-28 03:45:16.0",
                         "amountInCents": 25000,
                         "amountInDollarsAndCents": 250.0,
                         "taxAsPercentage": 0.0,
@@ -311,49 +311,49 @@
                     },
                     "features": [
                         {
-                            "URL": "https://tinybeans.com/api/store/feature/6",
-                            "id": 6,
-                            "dateCreated": "2015-04-09 00:00:00.0",
-                            "lastUpdated": "2018-11-01 07:37:48.0",
+                            "URL": "https://tinybeans.com/api/store/feature/42",
+                            "id": 42,
+                            "dateCreated": "2020-11-28 00:00:00.0",
+                            "lastUpdated": "2020-11-28 07:37:48.0",
                             "name": "Premium Features",
                             "description": "Features available on the Premium Plan",
                             "scopeMap": "{\"Tier\":\"premium\",\r\n\"Video\":{\"uploadLength\":300, \"playbackLength\":300},\r\n\"MultipleUpload\": {\"enabled\":true,\"maxFiles\":20},\r\n\"PhotoCollection\": {\"enabled\":true,\"maxEntriesInCollection\": 1000, \"maxCollections\": 1000},\r\n\"JournalExport\":{\"enabled\":true},\r\n\"JournalSearch\":{\"enabled\":true},\r\n\"PrivateMode\":{\"enabled\":true}\r\n}"
                         }
                     ]
                 },
-                "journalId": 917506,
+                "journalId": 567123,
                 "paymentTransaction": {
-                    "URL": "https://tinybeans.com/api/store/paymentTransaction/57172",
-                    "id": 57172,
-                    "dateCreated": "2017-11-28 04:38:52.0",
-                    "lastUpdated": "2017-11-28 04:38:55.0",
-                    "transactionDate": "28 Nov 2017",
+                    "URL": "https://tinybeans.com/api/store/paymentTransaction/68745",
+                    "id": 68745,
+                    "dateCreated": "2020-11-28 04:38:52.0",
+                    "lastUpdated": "2020-11-28 04:38:55.0",
+                    "transactionDate": "28 Nov 2020",
                     "amountInCents": 5000,
                     "amountDisplay": "$50.00",
                     "discount": 20000,
-                    "userId": 1876416,
-                    "productId": "Subscription_12",
-                    "paymentId": "ch_1BT0rxC1KDfn1Z2V4vVh7CSM",
-                    "couponId": 7731,
-                    "receiptNumber": "TB057172",
+                    "userId": 1234567,
+                    "productId": "Subscription_42",
+                    "paymentId": "randomCode",
+                    "couponId": 42,
+                    "receiptNumber": "4random42",
                     "description": "lifetime",
                     "paymentGatewayType": "ONLINE",
                     "last4": "2006",
                     "user": {
-                        "firstName": "Meghan",
+                        "firstName": "Mother",
                         "avatars": {
-                            "o": "https://tinybeans-public.s3-us-west-2.amazonaws.com/images/avatar-user-o.png",
-                            "s": "https://tinybeans-public.s3-us-west-2.amazonaws.com/images/avatar-user-s.png",
-                            "m": "https://tinybeans-public.s3-us-west-2.amazonaws.com/images/avatar-user-m.png",
-                            "l": "https://tinybeans-public.s3-us-west-2.amazonaws.com/images/avatar-user-l.png"
+                            "o": "https://tinybeans.com/path/to/bogus/avatar-user-o.png",
+                            "s": "https://tinybeans.com/path/to/bogus/avatar-user-s.png",
+                            "m": "https://tinybeans.com/path/to/bogus/avatar-user-m.png",
+                            "l": "https://tinybeans.com/path/to/bogus/avatar-user-l.png"
                         },
                         "deleted": false,
-                        "id": 1876416,
-                        "fullName": "Meghan Merckel",
-                        "lastName": "Merckel",
-                        "URL": "https://tinybeans.com/api/1/users/1876416",
-                        "username": "minimerckel@charter.net",
-                        "emailAddress": "minimerckel@charter.net",
+                        "id": 1234567,
+                        "fullName": "Mother NUnit",
+                        "lastName": "NUnit",
+                        "URL": "https://tinybeans.com/api/1/users/1234567",
+                        "username": "registration-email@domain.com",
+                        "emailAddress": "registration-email@domain.com",
                         "campaign": "",
                         "timestamp": 1503286113396,
                         "lastUpdatedTimestamp": 1602769262816,
@@ -385,8 +385,8 @@
                         "emailWeeklySummary": true,
                         "emailOptOut": false,
                         "emailMarketingOptOut": false,
-                        "referralCode": "75J2VZ",
-                        "referralUrl": "https://tinybeans.app.link/JN85UDpXZz?referralCode\u003d75J2VZ"
+                        "referralCode": "ABC123",
+                        "referralUrl": "https://tinybeans.app.link/referral/code?meh"
                     }
                 }
             },
