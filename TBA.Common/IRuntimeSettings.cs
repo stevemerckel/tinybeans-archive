@@ -27,7 +27,7 @@
 
         /// <summary>
         /// <para>Runs a simple check against each runtime setting to ensure it is a reasonable value.</para>
-        /// <para>If any settings fail validation, a <seealso cref="SettingsFailureException"/> will be thrown</para>
+        /// <para>If any settings fail validation, a <see cref="SettingsFailureException"/> will be thrown</para>
         /// </summary>
         bool ValidateSettings();
     }

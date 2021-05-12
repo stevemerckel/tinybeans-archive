@@ -1,43 +1,27 @@
-﻿using System;
-using Moq;
-using TBA.Common;
+﻿using NUnit.Framework;
+using System;
 
 namespace TBA.Tests
 {
     /// <summary>
     /// Base class with common elements for testing
     /// </summary>
+    [TestFixture]
     public abstract class TestBase
     {
-        private readonly Mock<IAppLogger> _mockLogger;
-
         /// <summary>
-        /// Default ctor
+        /// Returns the path to the directory that is executing the test
         /// </summary>
+        public string TestExecutionDirectory => TestContext.CurrentContext.TestDirectory;
+
         public TestBase()
         {
-            _mockLogger = new Mock<IAppLogger>();
-
-            _mockLogger
-                .Setup(x => x.Critical(It.IsAny<string>()))
-                .Callback<string>(message => Console.WriteLine($"[{nameof(IAppLogger.Critical)}]  {message}"));
-            _mockLogger
-                .Setup(x => x.Debug(It.IsAny<string>()))
-                .Callback<string>(message => Console.WriteLine($"[{nameof(IAppLogger.Debug)}]  {message}"));
-            _mockLogger
-                .Setup(x => x.Error(It.IsAny<string>()))
-                .Callback<string>(message => Console.WriteLine($"[{nameof(IAppLogger.Error)}]  {message}"));
-            _mockLogger
-                .Setup(x => x.Info(It.IsAny<string>()))
-                .Callback<string>(message => Console.WriteLine($"[{nameof(IAppLogger.Info)}]  {message}"));
-            _mockLogger
-                .Setup(x => x.Warn(It.IsAny<string>()))
-                .Callback<string>(message => Console.WriteLine($"[{nameof(IAppLogger.Warn)}]  {message}"));
+            // ensure calling class utilizes the proper decorator
+            Type t = GetType();
+            if (!t.IsDefined(typeof(TestFixtureAttribute), false))
+            {
+                throw new InvalidOperationException($"Type '{t.Name}' does not implement the expected attribute of '{nameof(TestFixtureAttribute)}'");
+            }
         }
-
-        /// <summary>
-        /// Mocked logger object based on <seealso cref="IAppLogger"/>
-        /// </summary>
-        public IAppLogger Logger => _mockLogger.Object;
     }
 }

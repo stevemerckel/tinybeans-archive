@@ -1,10 +1,10 @@
 ﻿namespace TBA.Common
 {
     /// <summary>
-    /// Serilog implementation of <seealso cref="IAppLogger"/>
+    /// Serilog implementation of <see cref="IAppLogger"/>
     /// </summary>
     /// <remarks>
-    /// Need to actually wire it up to Serilog, for now just doing the same thing as the <seealso cref="ConsoleAppLogger"/>
+    /// Need to actually wire it up to Serilog, for now just doing the same thing as the <see cref="ConsoleAppLogger"/>
     /// </remarks>
     public sealed class SerilogAppLogger : IAppLogger
     {

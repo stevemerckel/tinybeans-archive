@@ -14,9 +14,16 @@ namespace TBA.Tests
         }
 
         [Test]
-        public void Test_EnsureBackslashAsPathSeparator_Success()
+        public void Test_Dummy_Success()
+        {
+            Assert.IsTrue(true);
+        }
+
+        [Test]
+        public override void Test_EnsureProperPathSeparatorByHost_Success()
         {
             Assert.AreEqual('\\', Path.DirectorySeparatorChar);
+            DefaultMocks.MockLogger.Info($"The override implementation of '{nameof(Test_EnsureProperPathSeparatorByHost_Success)}' did run!");
         }
     }
 }

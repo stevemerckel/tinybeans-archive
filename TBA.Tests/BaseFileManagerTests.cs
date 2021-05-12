@@ -16,12 +16,21 @@ namespace TBA.Tests
             _sut = implementation;
         }
 
+        public abstract void Test_EnsureProperPathSeparatorByHost_Success();
+
         [SetUp]
         public void TestInitialize()
         {
             Assert.IsNotNull(_sut);
             Assert.IsFalse(string.IsNullOrWhiteSpace(RuntimeLocation));
             Assert.IsTrue(_sut.DirectoryExists(RuntimeLocation));
+            DefaultMocks.MockLogger.Info($"Finished {nameof(TestInitialize)}");
+        }
+
+        [Test]
+        public void Test_Dummy_Success()
+        {
+            Assert.IsTrue(true);
         }
     }
 }

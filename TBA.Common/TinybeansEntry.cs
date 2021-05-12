@@ -55,7 +55,7 @@ namespace TBA.Common
         /// <param name="caption">The display caption for the item</param>
         /// <param name="journalId">The journal Id this entry belongs to</param>
         /// <param name="sortOrder">The optional sort order for showing an item on the page</param>
-        /// <param name="sourceUrl">The source URL for the file -- not used for type <seealso cref="ArchiveType.Text"/></param>
+        /// <param name="sourceUrl">The source URL for the file -- not used for type <see cref="ArchiveType.Text"/></param>
         /// <param name="timestamp">The arbitrary version number for the content in this entry</param>
         public TinybeansEntry(ulong id, DateTime displayedOn, ArchiveType type, string caption, string journalId, int sortOrder = -1, string sourceUrl = null, ulong timestamp = 0)
         {

@@ -3,7 +3,7 @@
 namespace TBA.Common
 {
     /// <summary>
-    /// Extension methods for <seealso cref="DateTime"/> objects
+    /// Extension methods for <see cref="DateTime"/> objects
     /// </summary>
     public static class DateTimeExtensions
     {

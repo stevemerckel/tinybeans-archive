@@ -9,20 +9,34 @@ namespace TBA.Tests
     /// <remarks>
     /// <para>This is marked as abstract so that unit- and integration-tests can share the same common test logic</para>
     /// <para>If any implementation-specific tests are needed, then place them in the sub-class.</para>
+    /// <para>WARNING: Watch your use of the "_sut" object vs <see cref="GetRuntimeSettingsInstance"/>.  If you only need "read" access to the runtime settings, then you can use either.  If you are testing before/after changes, then use <see cref="GetRuntimeSettingsInstance"/> so that you don't affect concurrently running tests.</para>
     /// </remarks>
     public abstract class RuntimeSettingsBaseTests : TestBase
     {
+        private readonly bool _isRuntimeSettingsProviderFake = false;
         private readonly IRuntimeSettingsProvider _sut;
         private const int ExpectedMinThreadCountAllowed = 1;
         private const int ExpectedMaxThreadCountAllowed = 8;
 
         /// <summary>
+        /// Default ctor that uses a mocked <see cref="IRuntimeSettingsProvider"/> object
+        /// </summary>
+        public RuntimeSettingsBaseTests()
+            : this(null, true)
+        {
+        }
+
+        /// <summary>
         /// Default ctor
         /// </summary>
-        /// <param name="runtimeSettingsProvider">Runtime settings provider object -- real or mock</param>
-        public RuntimeSettingsBaseTests(IRuntimeSettingsProvider runtimeSettingsProvider)
+        /// <param name="implementation">Runtime settings provider object</param>
+        /// <param name="isProviderMock">Simple indication of whether the previous <see cref="IRuntimeSettingsProvider"/> object is a fake/mock implementation(<c>true</c>) or a real implementation (<c>false</c>)</param>
+        public RuntimeSettingsBaseTests(IRuntimeSettingsProvider implementation, bool isProviderMock)
         {
-            _sut = runtimeSettingsProvider;
+            _sut = isProviderMock
+                ? DefaultMocks.MockRuntimeSettingsProvider
+                : implementation;
+            _isRuntimeSettingsProviderFake = isProviderMock;
         }
 
         [OneTimeSetUp]
@@ -30,6 +44,7 @@ namespace TBA.Tests
         {
             Assert.IsNotNull(_sut);
             Assert.IsNotNull(_sut.GetRuntimeSettings());
+            DefaultMocks.MockLogger.Info($"Finished '{nameof(Test_BaselineAssertions_Success)}' method:  {nameof(_isRuntimeSettingsProviderFake)} was {_isRuntimeSettingsProviderFake}");
         }
 
         [Test]

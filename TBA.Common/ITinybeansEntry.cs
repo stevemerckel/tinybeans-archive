@@ -31,7 +31,7 @@ namespace TBA.Common
         public int? SortOverride { get; set; }
 
         /// <summary>
-        /// If this is set to <c>true</c>, then use the sort ordering specified by <seealso cref="SortOverride"/>
+        /// If this is set to <c>true</c>, then use the sort ordering specified by <see cref="SortOverride"/> property
         /// </summary>
         public bool IsSortOverridePresent { get; }
 

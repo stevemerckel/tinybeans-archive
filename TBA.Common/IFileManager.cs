@@ -6,7 +6,7 @@
     public interface IFileManager
     {
         /// <summary>
-        /// Creates a file at the specified location and writes the text receivedas <seealso cref="System.Text.Encoding.UTF8"/>.  If the file exists, it will be overwritten.
+        /// Creates a file at the specified location and writes the text receivedas <see cref="System.Text.Encoding.UTF8"/>.  If the file exists, it will be overwritten.
         /// </summary>
         /// <param name="fileLocation">The file path</param>
         /// <param name="contents">The text contents to write</param>

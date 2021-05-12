@@ -17,7 +17,7 @@ namespace TBA.Tests
 
         public TinybeansJsonHelperTests()
         {
-            _sut = new TinybeansJsonHelper(Logger);
+            _sut = new TinybeansJsonHelper(DefaultMocks.MockLogger);
         }
 
         [OneTimeSetUp]

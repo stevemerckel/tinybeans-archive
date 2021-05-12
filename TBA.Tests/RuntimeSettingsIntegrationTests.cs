@@ -12,7 +12,7 @@ namespace TBA.Tests
     {
         private static readonly IRuntimeSettingsProvider _provider = new RuntimeSettingsProvider(new WindowsFileSystemManager());
 
-        public RuntimeSettingsIntegrationTests() : base (_provider)
+        public RuntimeSettingsIntegrationTests() : base (_provider, false)
         {
         }
 
@@ -21,7 +21,7 @@ namespace TBA.Tests
         {
             // ensure runtime settings file is found
             const string RuntimeSettingsFileName = "runtime.settings";
-            var location = Path.Combine(TestContext.CurrentContext.TestDirectory, RuntimeSettingsFileName);
+            var location = Path.Combine(TestExecutionDirectory, RuntimeSettingsFileName);
             Assert.IsTrue(File.Exists(location), $"Could not find '{RuntimeSettingsFileName}' here: {location}");
         }
     }
