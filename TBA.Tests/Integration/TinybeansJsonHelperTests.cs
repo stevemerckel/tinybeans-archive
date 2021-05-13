@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using NUnit.Framework;
 using TBA.Common;
 
@@ -11,31 +10,31 @@ namespace TBA.Tests.Integration
         private const string DayEntriesFileName = "day-entries.json";
         private const string JournalSummaryFileName = "journal-summary.json";
         private readonly ITinybeansJsonHelper _sut;
-        private readonly string _jsonSamplesLocation = Path.Combine(TestContext.CurrentContext.TestDirectory, "json-samples");
+        private readonly string _jsonSamplesLocation;
         const string JsonStructureValidButNotAligned = @"{ ""one"": 1, ""two"": 2, ""three"": 3 }";
         const string JsonInvalid = @"This Is Not Json";
+        private readonly IFileManager _fileManager = new WindowsFileSystemManager();
 
         public TinybeansJsonHelperTests()
         {
             _sut = new TinybeansJsonHelper(DefaultMocks.MockLogger);
+            _jsonSamplesLocation = _fileManager.PathCombine(TestExecutionDirectory, "json-samples");
         }
 
         [OneTimeSetUp]
         public void EnsureJsonSamplesDirectoryExists()
         {
-            Assert.IsTrue(Directory.Exists(_jsonSamplesLocation));
+            Assert.IsTrue(_fileManager.DirectoryExists(_jsonSamplesLocation));
         }
 
         [TestCase(DayEntriesFileName)]
         [TestCase(JournalSummaryFileName)]
         public void Test_JsonSamplesHaveContent_Success(string fileName)
         {
-            var location = Path.Combine(_jsonSamplesLocation, fileName);
-            Assert.IsTrue(File.Exists(location));
-            var fi = new FileInfo(location);
-            Assert.IsNotNull(fi);
-            Assert.AreNotEqual(0, fi.Length);
-            var content = File.ReadAllText(location);
+            var location = _fileManager.PathCombine(_jsonSamplesLocation, fileName);
+            Assert.IsTrue(_fileManager.FileExists(location));
+            Assert.IsTrue(_fileManager.FileSize(location) > 0);
+            var content = _fileManager.FileReadAllText(location);
             Assert.IsTrue(content.Length > 100);
             Assert.IsFalse(string.IsNullOrWhiteSpace(content));
         }
@@ -43,8 +42,8 @@ namespace TBA.Tests.Integration
         [Test]
         public void Test_Deserialize_DayEntry_Success()
         {
-            var jsonLocation = Path.Combine(_jsonSamplesLocation, DayEntriesFileName);
-            var json = File.ReadAllText(jsonLocation);
+            var jsonLocation = _fileManager.PathCombine(_jsonSamplesLocation, DayEntriesFileName);
+            var json = _fileManager.FileReadAllText(jsonLocation);
 
             var dayEntries = _sut.ParseArchivedContent(json);
             Assert.IsNotNull(dayEntries);
@@ -58,8 +57,8 @@ namespace TBA.Tests.Integration
         [Test]
         public void Test_Deserialize_JournalSummary_Success()
         {
-            var jsonLocation = Path.Combine(_jsonSamplesLocation, JournalSummaryFileName);
-            var json = File.ReadAllText(jsonLocation);
+            var jsonLocation = _fileManager.PathCombine(_jsonSamplesLocation, JournalSummaryFileName);
+            var json = _fileManager.FileReadAllText(jsonLocation);
 
             var summaries = _sut.ParseJournalSummaries(json);
             summaries.ForEach(s =>
@@ -75,21 +74,21 @@ namespace TBA.Tests.Integration
 
         [TestCase(JsonInvalid)]
         [TestCase(JsonStructureValidButNotAligned)]
-        public void Test_Deserialize_DayEntries_Fail(string json)
+        public void Test_Deserialize_DayEntries_BogusData_Fail(string json)
         {
             Assert.Catch(() => _sut.ParseArchivedContent(json));
         }
 
         [TestCase(JsonInvalid)]
         [TestCase(JsonStructureValidButNotAligned)]
-        public void Test_Deserialize_YearMonthEntries_Fail(string json)
+        public void Test_Deserialize_YearMonthEntries_BogusData_Fail(string json)
         {
             Assert.Catch(() => _sut.ParseArchivedContent(json));
         }
 
         [TestCase(JsonInvalid)]
         [TestCase(JsonStructureValidButNotAligned)]
-        public void Test_Deserialize_JournalSummary_Fail(string json)
+        public void Test_Deserialize_JournalSummary_BogusData_Fail(string json)
         {
             Assert.Catch(() => _sut.ParseJournalSummaries(json));
         }

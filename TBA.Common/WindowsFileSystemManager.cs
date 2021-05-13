@@ -14,7 +14,7 @@ namespace TBA.Common
     public sealed class WindowsFileSystemManager : IFileManager
     {
         /// <inheritdoc />
-        public char DirectorySplit => Path.DirectorySeparatorChar;
+        public char DirectorySeparatorChar => Path.DirectorySeparatorChar;
 
         /// <inheritdoc />
         public void FileDelete(string fileLocation)
@@ -270,6 +270,16 @@ namespace TBA.Common
             }
         }
 
+        /// <inheritdoc />
+        public long FileSize(string fileLocation)
+        {
+            if (string.IsNullOrWhiteSpace(fileLocation))
+                throw new ArgumentNullException(nameof(fileLocation), "File location is empty/null!");
 
+            if (!FileExists(fileLocation))
+                throw new FileNotFoundException("File could not be found!", fileLocation);
+
+            return new FileInfo(fileLocation).Length;
+        }
     }
 }

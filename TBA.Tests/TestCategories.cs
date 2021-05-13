@@ -6,7 +6,7 @@
     public static class TestCategories
     {
         /// <summary>
-        /// Use when the specific test might only work for the 
+        /// Use when the specific test might only work when an active account has some backing data
         /// </summary>
         public const string AccountSpecific = nameof(AccountSpecific);
     }

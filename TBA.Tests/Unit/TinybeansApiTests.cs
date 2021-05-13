@@ -14,13 +14,17 @@ namespace TBA.Tests.Unit
     {
         private const string DayEntriesFileName = "day-entries.json";
         private const string JournalSummaryFileName = "journal-summary.json";
-        private static readonly string _jsonSamplesLocation = System.IO.Path.Combine(TestContext.CurrentContext.TestDirectory, "json-samples");
+        private static readonly string _jsonSamplesLocation;
         private static readonly Mock<ITinybeansApiHelper> _mock = GetMock();
         private static readonly IFileManager _fileManager = new WindowsFileSystemManager();
         
+        static TinybeansApiTests()
+        {
+            _jsonSamplesLocation = _fileManager.PathCombine(TestContext.CurrentContext.TestDirectory, "json-samples");
+        }
+
         public TinybeansApiTests() : base(_mock.Object)
         {
-
         }
 
         [SetUp]
@@ -41,9 +45,9 @@ namespace TBA.Tests.Unit
                 .Setup(x => x.Download(It.IsAny<ITinybeansEntry>(), It.IsAny<string>()))
                 .Returns<ITinybeansEntry, string>((entry, path) =>
                 {
-                    var localPath = System.IO.Path.Combine(path, "source-file.ext");
-                    var squarePath = System.IO.Path.Combine(path, "square-image.ext");
-                    var rectPath = System.IO.Path.Combine(path, "rectangle-image.ext");
+                    var localPath = _fileManager.PathCombine(path, "source-file.ext");
+                    var squarePath = _fileManager.PathCombine(path, "square-image.ext");
+                    var rectPath = _fileManager.PathCombine(path, "rectangle-image.ext");
                     return new EntryDownloadInfo(entry.Id, localPath, squarePath, rectPath);
                 });
             mockApi
@@ -51,8 +55,14 @@ namespace TBA.Tests.Unit
                 .Returns<DateTime, long>((targetDate, journalId) =>
                 {
                     var dayJsonLocation = _fileManager.PathCombine(_jsonSamplesLocation, DayEntriesFileName);
-                    var matches = jsonHelper.ParseArchivedContent(_fileManager.FileReadAllText(dayJsonLocation));
-                    var matchesByDate = matches.Where(x => x.DisplayedOn.Date == targetDate.Date);
+                    var pool = jsonHelper.ParseArchivedContent(_fileManager.FileReadAllText(dayJsonLocation));
+                    if (!pool.Any())
+                        throw new Exception("No entries found from parsed JSON file!");
+
+                    var matchesByDate = pool.Where(x => x.DisplayedOn.Date == targetDate.Date).ToList();
+                    if (!matchesByDate.Any())
+                        throw new Exception($"No matches found in day '{targetDate.ToString("yyyy-MM-dd")}' from mock out of {pool.Count} entries.");
+
                     return matchesByDate.ToList();
                 });
             mockApi
@@ -60,10 +70,16 @@ namespace TBA.Tests.Unit
                 .Returns<DateTime, long>((targetDate, journalId) =>
                 {
                     var dayJsonLocation = _fileManager.PathCombine(_jsonSamplesLocation, DayEntriesFileName);
-                    var matches = jsonHelper.ParseArchivedContent(_fileManager.FileReadAllText(dayJsonLocation));
+                    var pool = jsonHelper.ParseArchivedContent(_fileManager.FileReadAllText(dayJsonLocation));
+                    if (!pool.Any())
+                        throw new Exception("No entries found from parsed JSON file!");
+
                     var start = new DateTime(targetDate.Year, targetDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
                     var end = start.AddMonths(1);
-                    var matchesByMonthRange = matches.Where(x => x.DisplayedOn.Date >= start.Date && x.DisplayedOn.Date < end.Date);
+                    var matchesByMonthRange = pool.Where(x => x.DisplayedOn.Date >= start.Date && x.DisplayedOn.Date < end.Date).ToList();
+                    if (!matchesByMonthRange.Any())
+                        throw new Exception($"No matches found in month of '{start.ToString("MMMM yyyy")}' from mock out of {pool.Count} entries.");
+
                     return matchesByMonthRange.ToList();
                 });
             mockApi

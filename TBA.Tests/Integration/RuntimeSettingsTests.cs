@@ -1,5 +1,4 @@
-﻿using System.IO;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using TBA.Common;
 
 namespace TBA.Tests.Integration
@@ -11,6 +10,7 @@ namespace TBA.Tests.Integration
     public class RuntimeSettingsTests : BaseRuntimeSettingsTests
     {
         private static readonly IRuntimeSettingsProvider _provider = new RuntimeSettingsProvider(new WindowsFileSystemManager());
+        private static readonly IFileManager _fileManager = new WindowsFileSystemManager();
 
         public RuntimeSettingsTests() : base (_provider, false)
         {
@@ -21,8 +21,8 @@ namespace TBA.Tests.Integration
         {
             // ensure runtime settings file is found
             const string RuntimeSettingsFileName = "runtime.settings";
-            var location = Path.Combine(TestExecutionDirectory, RuntimeSettingsFileName);
-            Assert.IsTrue(File.Exists(location), $"Could not find '{RuntimeSettingsFileName}' here: {location}");
+            var location = _fileManager.PathCombine(TestExecutionDirectory, RuntimeSettingsFileName);
+            Assert.IsTrue(_fileManager.FileExists(location), $"Could not find '{RuntimeSettingsFileName}' here: {location}");
         }
     }
 }

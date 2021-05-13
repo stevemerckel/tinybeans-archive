@@ -46,6 +46,13 @@
         /// <param name="fileLocation">The file path</param>
         /// <returns>The hash as a hexadecimal string</returns>
         string FileHash(string fileLocation);
+
+        /// <summary>
+        /// Returns the file size in bytes
+        /// </summary>
+        /// <param name="fileLocation">The file path</param>
+        /// <returns>File size expressed as bytes</returns>
+        long FileSize(string fileLocation);
         
         /// <summary>
         /// Unblocks the file, which usually is blocked for files pulled from web/network paths
@@ -100,11 +107,6 @@
         string[] FileSearch(string searchPattern, string startingPath, bool includeSubDirs = false);
 
         /// <summary>
-        /// Returns the character to use for separating directories
-        /// </summary>
-        char DirectorySplit { get; }
-
-        /// <summary>
         /// Returns a file name of the specified path string without the extension.
         /// </summary>
         /// <param name="fileLocation">The path of the file</param>
@@ -126,5 +128,10 @@
         /// <param name="path"></param>
         /// <returns></returns>
         string DirectoryGetName(string path);
+
+        /// <summary>
+        /// Returns the director separator character that the file system uses
+        /// </summary>
+        char DirectorySeparatorChar { get; }
     }
 }
