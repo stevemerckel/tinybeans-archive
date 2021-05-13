@@ -21,8 +21,7 @@ namespace TBA.Tests
         /// <summary>
         /// Default ctor that uses a mocked <see cref="IRuntimeSettingsProvider"/> object
         /// </summary>
-        public BaseRuntimeSettingsTests()
-            : this(null, true)
+        public BaseRuntimeSettingsTests() : this(null, true)
         {
         }
 
@@ -36,6 +35,7 @@ namespace TBA.Tests
             _sut = isProviderMock
                 ? DefaultMocks.MockRuntimeSettingsProvider
                 : implementation;
+
             _isRuntimeSettingsProviderFake = isProviderMock;
         }
 

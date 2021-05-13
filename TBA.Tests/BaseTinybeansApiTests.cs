@@ -50,30 +50,58 @@ namespace TBA.Tests
             });
         }
 
-        [TestCase("2010-01-01", 0)]
-        [TestCase("2018-09-19", 5)]
-        public void Test_EntriesBySingleDate_Success(string dateString, int minimumExpectedEntryCount)
+        [Test]
+        [Category(TestCategories.AccountSpecific)]
+        public void Test_EntriesBySingleDate_Success()
         {
+            const int MinExpectedCount = 5;
+            var target = DateTime.Parse("2018-09-19");
             var journalId = _sut.GetJournalSummaries()?.Select(x => x.Id).FirstOrDefault() ?? null;
             if (journalId == null)
                 throw new InvalidOperationException("No journal ID was found!  Do you have a journal setup with Tinybeans?");
 
-            var target = DateTime.Parse(dateString);
             var entries = _sut.GetByDate(target, journalId.Value);
-            ValidateReceivedEntries(entries, minimumExpectedEntryCount, target, journalId.Value);
+            ValidateReceivedEntries(entries, MinExpectedCount, target, journalId.Value);
         }
 
-        [TestCase("2010-01-01", 0)]
-        //[TestCase("2018-09-19", 5)]
-        public void Test_EntriesByYearMonth_Success(string dateString, int minimumExpectedEntryCount)
+        [Test]
+        [Category(TestCategories.AccountSpecific)]
+        public void Test_EntriesByYearMonth_Success()
+        {
+            const int MinExpectedCount = 5;
+            var target = DateTime.Parse("2018-09-19");
+            var journalId = _sut.GetJournalSummaries()?.Select(x => x.Id).FirstOrDefault() ?? null;
+            if (journalId == null)
+                throw new InvalidOperationException("No journal ID was found!  Do you have a journal setup with Tinybeans?");
+
+            var entries = _sut.GetEntriesByYearMonth(target, journalId.Value);
+            ValidateReceivedEntries(entries, MinExpectedCount, target, journalId.Value);
+        }
+
+        [Test]
+        public void Test_EntriesByYearMonth_NoEntriesFound_Fail()
         {
             var journalId = _sut.GetJournalSummaries()?.Select(x => x.Id).FirstOrDefault() ?? null;
             if (journalId == null)
                 throw new InvalidOperationException("No journal ID was found!  Do you have a journal setup with Tinybeans?");
 
-            var target = DateTime.Parse(dateString);
-            var entries = _sut.GetEntriesByYearMonth(target, journalId.Value);
-            ValidateReceivedEntries(entries, minimumExpectedEntryCount, target, journalId.Value);
+            var target = DateTime.Parse("1980-01-01"); // this is LONG before Tinybeans was created
+            List<ITinybeansEntry> entries = null;
+            Assert.Throws<Exception>(() => entries = _sut.GetByDate(target, journalId.Value));
+            Assert.IsNull(entries);
+        }
+
+        [Test]
+        public void Test_EntriesBySingleDate_NoEntriesFound_Fail()
+        {
+            var journalId = _sut.GetJournalSummaries()?.Select(x => x.Id).FirstOrDefault() ?? null;
+            if (journalId == null)
+                throw new InvalidOperationException("No journal ID was found!  Do you have a journal setup with Tinybeans?");
+
+            var target = DateTime.Parse("1980-01-01"); // this is LONG before Tinybeans was created
+            List<ITinybeansEntry> entries = null;
+            Assert.Throws<Exception>(() => entries = _sut.GetByDate(target, journalId.Value));
+            Assert.IsNull(entries);
         }
 
         /// <remarks>

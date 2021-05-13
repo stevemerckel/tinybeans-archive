@@ -11,7 +11,7 @@ namespace TBA.Tests
         private readonly IFileManager _sut;
         protected string RuntimeLocation = TestContext.CurrentContext.TestDirectory;
 
-        internal BaseFileManagerTests(IFileManager implementation)
+        public BaseFileManagerTests(IFileManager implementation)
         {
             _sut = implementation;
         }
@@ -25,12 +25,6 @@ namespace TBA.Tests
             Assert.IsFalse(string.IsNullOrWhiteSpace(RuntimeLocation));
             Assert.IsTrue(_sut.DirectoryExists(RuntimeLocation));
             DefaultMocks.MockLogger.Info($"Finished {nameof(TestInitialize)}");
-        }
-
-        [Test]
-        public void Test_Dummy_Success()
-        {
-            Assert.IsTrue(true);
         }
     }
 }

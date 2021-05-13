@@ -1,6 +1,7 @@
 ﻿using Moq;
 using NUnit.Framework;
 using System;
+using System.Linq;
 using TBA.Common;
 
 namespace TBA.Tests.Unit
@@ -50,17 +51,20 @@ namespace TBA.Tests.Unit
                 .Returns<DateTime, long>((targetDate, journalId) =>
                 {
                     var dayJsonLocation = _fileManager.PathCombine(_jsonSamplesLocation, DayEntriesFileName);
-                    return jsonHelper.ParseArchivedContent(_fileManager.FileReadAllText(dayJsonLocation));
+                    var matches = jsonHelper.ParseArchivedContent(_fileManager.FileReadAllText(dayJsonLocation));
+                    var matchesByDate = matches.Where(x => x.DisplayedOn.Date == targetDate.Date);
+                    return matchesByDate.ToList();
                 });
             mockApi
                 .Setup(x => x.GetEntriesByYearMonth(It.IsAny<DateTime>(), It.IsAny<long>()))
                 .Returns<DateTime, long>((targetDate, journalId) =>
                 {
-                    // NOTE: This is a little cheating by calling the "single day" implementation, but the JSON structure they use for "single day" and "year-month" is the same.
-                    //       Worst case is that this mocked test will succeed while the integration test will fail.
-                    //       And to be fair, that is possible given that Tinybeans has not (yet!) published their API.
-                    //       So we'll do the best we can within reason  :)
-                    return mockApi.Object.GetByDate(targetDate, journalId);
+                    var dayJsonLocation = _fileManager.PathCombine(_jsonSamplesLocation, DayEntriesFileName);
+                    var matches = jsonHelper.ParseArchivedContent(_fileManager.FileReadAllText(dayJsonLocation));
+                    var start = new DateTime(targetDate.Year, targetDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                    var end = start.AddMonths(1);
+                    var matchesByMonthRange = matches.Where(x => x.DisplayedOn.Date >= start.Date && x.DisplayedOn.Date < end.Date);
+                    return matchesByMonthRange.ToList();
                 });
             mockApi
                 .Setup(x => x.GetJournalSummaries())
