@@ -2,8 +2,11 @@
 using NUnit.Framework;
 using TBA.Common;
 
-namespace TBA.Tests
+namespace TBA.Tests.Integration
 {
+    /// <summary>
+    /// Tests of the <see cref="IFileManager"/> contract using the Windows file system
+    /// </summary>
     [TestFixture]
     public sealed class WindowsFileManagerTests : BaseFileManagerTests
     {

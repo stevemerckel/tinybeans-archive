@@ -2,17 +2,17 @@
 using NUnit.Framework;
 using TBA.Common;
 
-namespace TBA.Tests
+namespace TBA.Tests.Integration
 {
     /// <summary>
     /// Integration tests for Runtime Settings + Provider
     /// </summary>
     [TestFixture]
-    public class RuntimeSettingsIntegrationTests : RuntimeSettingsBaseTests
+    public class RuntimeSettingsTests : BaseRuntimeSettingsTests
     {
         private static readonly IRuntimeSettingsProvider _provider = new RuntimeSettingsProvider(new WindowsFileSystemManager());
 
-        public RuntimeSettingsIntegrationTests() : base (_provider, false)
+        public RuntimeSettingsTests() : base (_provider, false)
         {
         }
 

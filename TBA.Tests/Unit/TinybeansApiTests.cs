@@ -3,13 +3,13 @@ using NUnit.Framework;
 using System;
 using TBA.Common;
 
-namespace TBA.Tests
+namespace TBA.Tests.Unit
 {
     /// <summary>
     /// Unit tests for the <see cref="ITinybeansApiHelper"/> object
     /// </summary>
     [TestFixture]
-    public sealed class TinybeansApiUnitTests : TinybeansApiBaseTests
+    public sealed class TinybeansApiTests : BaseTinybeansApiTests
     {
         private const string DayEntriesFileName = "day-entries.json";
         private const string JournalSummaryFileName = "journal-summary.json";
@@ -17,7 +17,7 @@ namespace TBA.Tests
         private static readonly Mock<ITinybeansApiHelper> _mock = GetMock();
         private static readonly IFileManager _fileManager = new WindowsFileSystemManager();
         
-        public TinybeansApiUnitTests() : base(_mock.Object)
+        public TinybeansApiTests() : base(_mock.Object)
         {
 
         }

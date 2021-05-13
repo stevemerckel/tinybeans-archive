@@ -26,7 +26,13 @@ namespace TBA.Common
             _logger.Debug($"JSON response from {nameof(ParseArchivedContent)}:{Environment.NewLine}{json}");
 
             var content = JObject.Parse(json);
+            if (content["entries"] == null)
+                throw new Exception("No 'entries' node was found in JSON!");
+
             var entryCount = ((JArray)content["entries"]).Count();
+            if (entryCount == 0)
+                return new List<ITinybeansEntry>();
+
             var result = new List<ITinybeansEntry>(entryCount);
             foreach (var e in (JArray)content["entries"])
             {

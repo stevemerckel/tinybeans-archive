@@ -1,14 +1,14 @@
 ﻿using NUnit.Framework;
 
-namespace TBA.Tests
+namespace TBA.Tests.Unit
 {
     /// <summary>
     /// Unit tests for Runtime Settings + Provider
     /// </summary>
     [TestFixture]
-    public class RuntimeSettingsUnitTests : RuntimeSettingsBaseTests
+    public class RuntimeSettingsTests : BaseRuntimeSettingsTests
     {
-        public RuntimeSettingsUnitTests() : base()
+        public RuntimeSettingsTests() : base()
         {
         }
     }

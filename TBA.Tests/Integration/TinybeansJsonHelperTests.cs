@@ -3,7 +3,7 @@ using System.IO;
 using NUnit.Framework;
 using TBA.Common;
 
-namespace TBA.Tests
+namespace TBA.Tests.Integration
 {
     [TestFixture]
     public class TinybeansJsonHelperTests : TestBase

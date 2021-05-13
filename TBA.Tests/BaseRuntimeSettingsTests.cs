@@ -11,7 +11,7 @@ namespace TBA.Tests
     /// <para>If any implementation-specific tests are needed, then place them in the sub-class.</para>
     /// <para>WARNING: Watch your use of the "_sut" object vs <see cref="GetRuntimeSettingsInstance"/>.  If you only need "read" access to the runtime settings, then you can use either.  If you are testing before/after changes, then use <see cref="GetRuntimeSettingsInstance"/> so that you don't affect concurrently running tests.</para>
     /// </remarks>
-    public abstract class RuntimeSettingsBaseTests : TestBase
+    public abstract class BaseRuntimeSettingsTests : TestBase
     {
         private readonly bool _isRuntimeSettingsProviderFake = false;
         private readonly IRuntimeSettingsProvider _sut;
@@ -21,7 +21,7 @@ namespace TBA.Tests
         /// <summary>
         /// Default ctor that uses a mocked <see cref="IRuntimeSettingsProvider"/> object
         /// </summary>
-        public RuntimeSettingsBaseTests()
+        public BaseRuntimeSettingsTests()
             : this(null, true)
         {
         }
@@ -31,7 +31,7 @@ namespace TBA.Tests
         /// </summary>
         /// <param name="implementation">Runtime settings provider object</param>
         /// <param name="isProviderMock">Simple indication of whether the previous <see cref="IRuntimeSettingsProvider"/> object is a fake/mock implementation(<c>true</c>) or a real implementation (<c>false</c>)</param>
-        public RuntimeSettingsBaseTests(IRuntimeSettingsProvider implementation, bool isProviderMock)
+        public BaseRuntimeSettingsTests(IRuntimeSettingsProvider implementation, bool isProviderMock)
         {
             _sut = isProviderMock
                 ? DefaultMocks.MockRuntimeSettingsProvider
