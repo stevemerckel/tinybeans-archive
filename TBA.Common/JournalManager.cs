@@ -242,7 +242,7 @@ namespace TBA.Common
             sw.Stop();
             _logger.Info($"Processing time for downloading {archives.Count} items using {_runtimeSettings.MaxThreadCount} thread(s) was {sw.ElapsedMilliseconds} ms");
 
-            // write JSON metadata to file system
+            // write daily JSON metadata to file system
             var minDate = archives.Min(x => x.DisplayedOn);
             var maxDate = archives.Max(x => x.DisplayedOn);
             var currentYearMonth = new DateTime(minDate.Year, minDate.Month, 1, 0, 0, 0, DateTimeKind.Local); // first day of the "start" year-month
@@ -288,7 +288,7 @@ namespace TBA.Common
             }
             while (currentYearMonth <= maxDate.Date);
 
-            // write JSON manifests
+            // write yyyy-MM JSON metadata to file system
             var uniqueJournalIds = archives.Select(x => x.JournalId).Distinct();
             foreach (var j in uniqueJournalIds)
             {
@@ -311,20 +311,6 @@ namespace TBA.Common
                         .ToList();
                     var yearMonthJson = JsonConvert.SerializeObject(pool);
                     FileManager.FileWriteText(yearMonthJsonLocation, yearMonthJson);
-                }
-
-                // write yyyy manifests in year directories
-                var uniqueYears = archives.Select(x => x.DisplayedOn.Year).Distinct();
-                foreach (var y in uniqueYears)
-                {
-                    var yearDir = FileManager.PathCombine(journalDir, y.ToString());
-                    var yearManifestLocation = FileManager.PathCombine(yearDir, $"manifest_{y}.json");
-                    var pool = archives
-                        .Where(x => x.JournalId == j && x.DisplayedOn.Year == y)
-                        .OrderBy(x => x.DisplayedOn)
-                        .ToList();
-                    var yearJson = JsonConvert.SerializeObject(pool);
-                    FileManager.FileWriteText(yearManifestLocation, yearJson);
                 }
             }
 
