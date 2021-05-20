@@ -9,10 +9,10 @@ namespace TBA.Tests.Integration
     [TestFixture]
     public class RuntimeSettingsTests : BaseRuntimeSettingsTests
     {
-        private static readonly IRuntimeSettingsProvider _provider = new RuntimeSettingsProvider(new WindowsFileSystemManager());
+        private static readonly IRuntimeSettingsProvider _sut = new RuntimeSettingsProvider(new WindowsFileSystemManager());
         private static readonly IFileManager _fileManager = new WindowsFileSystemManager();
 
-        public RuntimeSettingsTests() : base (_provider, false)
+        public RuntimeSettingsTests() : base (_sut, false)
         {
         }
 

@@ -288,13 +288,45 @@ namespace TBA.Common
             }
             while (currentYearMonth <= maxDate.Date);
 
-            //
-            // todo: write yyyy-MM manifests
-            //
+            // write JSON manifests
+            var uniqueJournalIds = archives.Select(x => x.JournalId).Distinct();
+            foreach (var j in uniqueJournalIds)
+            {
+                var journalDir = FileManager.PathCombine(Root, j);
 
-            //
-            // todo: write yyyy manifests
-            //
+                // write yyyy-MM manifests in month directories
+                var uniqueYearMonths = archives
+                    .Select(x => new { Year = x.DisplayedOn.Year, Month = x.DisplayedOn.Month })
+                    .Distinct();
+
+                foreach(var ym in uniqueYearMonths)
+                {
+                    var yearDir = FileManager.PathCombine(journalDir, ym.Year.ToString());
+                    var monthFolderName = ym.Month.ToString().PadLeft(2, '0');
+                    var yearMonthDir = FileManager.PathCombine(yearDir, monthFolderName);
+                    var yearMonthJsonLocation = FileManager.PathCombine(yearMonthDir, $"manifest_{ym.Year}-{monthFolderName}.json");
+                    var pool = archives
+                        .Where(x => x.JournalId == j && x.DisplayedOn.Year == ym.Year && x.DisplayedOn.Month == ym.Month)
+                        .OrderBy(x => x.DisplayedOn)
+                        .ToList();
+                    var yearMonthJson = JsonConvert.SerializeObject(pool);
+                    FileManager.FileWriteText(yearMonthJsonLocation, yearMonthJson);
+                }
+
+                // write yyyy manifests in year directories
+                var uniqueYears = archives.Select(x => x.DisplayedOn.Year).Distinct();
+                foreach (var y in uniqueYears)
+                {
+                    var yearDir = FileManager.PathCombine(journalDir, y.ToString());
+                    var yearManifestLocation = FileManager.PathCombine(yearDir, $"manifest_{y}.json");
+                    var pool = archives
+                        .Where(x => x.JournalId == j && x.DisplayedOn.Year == y)
+                        .OrderBy(x => x.DisplayedOn)
+                        .ToList();
+                    var yearJson = JsonConvert.SerializeObject(pool);
+                    FileManager.FileWriteText(yearManifestLocation, yearJson);
+                }
+            }
 
             sw.Stop();
             _logger.Info($"Processing time for writing manifests for {archives.Count} entries was {sw.ElapsedMilliseconds} ms");
