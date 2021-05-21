@@ -22,7 +22,7 @@ namespace TBA.Sandbox
             //Test01(logger, rangeStart, rangeEnd);
             Test02(logger, rangeStart, rangeEnd);
 
-
+            Console.WriteLine();
             Console.WriteLine("EOP");
             Console.ReadLine();
         }
