@@ -11,7 +11,7 @@ namespace TBA.Sandbox
 
         static void Main(string[] args)
         {
-            const int MonthCount = 1;
+            const int MonthCount = 60;
             var now = DateTime.Now.Date;
             var rangeStart = now.AddMonths(-1 * MonthCount);
             var rangeEnd = now;

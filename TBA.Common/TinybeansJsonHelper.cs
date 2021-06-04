@@ -58,7 +58,7 @@ namespace TBA.Common
 
                 if (isEncodeFailed)
                 {
-                    _logger.Warn($"Skipping content id '{id}' (on {targetDate.ToString("yyyy-MM-dd")}) because it's video encode failed at Tinybeans.");
+                    _logger.Warn($"Skipping content id '{id}' (on {targetDate.ToString("yyyy-MM-dd")}) because its video encode failed at Tinybeans.");
                     continue;
                 }
 

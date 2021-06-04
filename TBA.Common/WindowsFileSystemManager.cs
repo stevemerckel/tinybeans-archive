@@ -108,7 +108,7 @@ namespace TBA.Common
             if (string.IsNullOrWhiteSpace(fileLocation))
                 throw new ArgumentNullException(nameof(fileLocation), "Value cannot be null or empty.");
 
-            ConsiderDestinationDirectoryFolderCreation(fileLocation);
+            //ConsiderDestinationDirectoryFolderCreation(fileLocation);
 
             try
             {
@@ -132,7 +132,7 @@ namespace TBA.Common
             if (string.IsNullOrWhiteSpace(fileLocation))
                 throw new ArgumentNullException(nameof(fileLocation), "Value cannot be null or empty.");
 
-            ConsiderDestinationDirectoryFolderCreation(fileLocation);
+            //ConsiderDestinationDirectoryFolderCreation(fileLocation);
 
             try
             {
@@ -241,7 +241,7 @@ namespace TBA.Common
                 return; // already exists!
 
             // Get directory parts
-            var separator = Path.DirectorySeparatorChar;
+            var separator = DirectorySeparatorChar;
             var parts = destinationDirectory.Split(new[] { separator }, StringSplitOptions.None);
 
             // Find out how far back from the right-most part of path that we need to start from.
@@ -262,12 +262,32 @@ namespace TBA.Common
                 startIndex--;
             }
 
-            for (var i = 1; i < parts.Length - startIndex; i++)
+
+            //
+            // todo: investigate this area, and possibly section above, for a bug where a file is made when it should be a directory
+            // example: 2019-06-18 (and "19")
+            //
+
+            var makeMe = root;
+            foreach (var p in parts)
             {
-                var makeMe = root + separator + string.Join(separator.ToString(), parts, startIndex + 1, i);
+                makeMe = PathCombine(makeMe, p);
                 CreateDirectory(makeMe);
-                Thread.Sleep(2);
+                Thread.Sleep(5);
             }
+
+            //for (var i = 1; i < parts.Length - startIndex; i++)
+            //{
+            //    var makeMe = root;
+            //    foreach (var p in parts)
+            //    {
+            //        makeMe = PathCombine(makeMe, p);
+            //    }
+
+            //    var makeMe = root + separator + string.Join(separator.ToString(), parts, startIndex + 1, i);
+            //    CreateDirectory(makeMe);
+            //    Thread.Sleep(2);
+            //}
         }
 
         /// <inheritdoc />

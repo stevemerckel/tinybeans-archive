@@ -66,7 +66,16 @@ namespace TBA.Common
                 return null;
             }
 
-            return _jsonHelper.ParseArchivedContent(json);
+            try
+            {
+                return _jsonHelper.ParseArchivedContent(json);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn($"{nameof(Exception)} thrown trying to fetch entries for '{yearMonth.Year}-{yearMonth.Month.ToString().PadLeft(2, '0')}' -- {ex.Message}");
+            }
+
+            return null;
         }
 
         /// <inheritdoc />
@@ -86,14 +95,26 @@ namespace TBA.Common
         /// <inheritdoc />
         public EntryDownloadInfo Download(ITinybeansEntry archive, string destinationDirectory)
         {
-            if (!archive.SourceUrl.StartsWith("http", StringComparison.InvariantCultureIgnoreCase))
+            if (archive.ArchiveType == ArchiveType.Text)
             {
-                _logger.Debug($"The archive {nameof(archive.Id)} of '{archive.Id}' has a local path of '{archive.SourceUrl}', so we are not going to download it.");
-                return null;
+                //
+                // todo: find an archive text entry that has an emoji
+                //       then validate that the meta is written in unicode (i.e. "\u" prefix)
+
+                var fileName = Guid.NewGuid().ToString("N");
+                var destinationLocation = _fileManager.PathCombine(destinationDirectory, $"{fileName}.txt");
+                _fileManager.FileWriteText(destinationDirectory, archive.Caption, System.Text.Encoding.Unicode);
+                return new EntryDownloadInfo(archive.Id, destinationLocation, null, null);
             }
 
             if (archive.ArchiveType == ArchiveType.Image || archive.ArchiveType == ArchiveType.Video)
             {
+                if (!archive.SourceUrl.StartsWith("http", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    _logger.Debug($"The archive {nameof(archive.Id)} of '{archive.Id}' has a local path of '{archive.SourceUrl}', so we are not going to download it.");
+                    return null;
+                }
+
                 var mainContentLocation = DetermineLocalFileLocation(archive.SourceUrl, destinationDirectory);
                 var thumbRectLocation = DetermineLocalFileLocation(archive.ThumbnailUrlRectangle, destinationDirectory, "-tr");
                 var thumbSquareLocation = DetermineLocalFileLocation(archive.ThumbnailUrlRectangle, destinationDirectory, "-ts");
@@ -136,18 +157,6 @@ namespace TBA.Common
                 }
 
                 return new EntryDownloadInfo(archive.Id, mainContentLocation, thumbRectLocation, thumbSquareLocation);
-            }
-
-            if (archive.ArchiveType == ArchiveType.Text)
-            {
-                //
-                // todo:    find an archive text entry that has an emoji
-                //          then validate that the meta is written in unicode (i.e. "\u" prefix)
-
-                var fileName = Guid.NewGuid().ToString("N");
-                var destinationLocation = _fileManager.PathCombine(destinationDirectory, $"{fileName}.txt");
-                _fileManager.FileWriteText(destinationDirectory, archive.Caption, System.Text.Encoding.Unicode);
-                return new EntryDownloadInfo(archive.Id, destinationLocation, null, null);
             }
 
             throw new NotSupportedException($"Archive type of {archive.ArchiveType} is not yet supported!!");

@@ -89,8 +89,9 @@ namespace TBA.Common
             do
             {
                 // fetch current year-month combo of archive entries
-                var currentMonth = TinybeansApi.GetEntriesByYearMonth(currentYearMonth.Date, actualJournalId);
-                pool.AddRange(currentMonth);
+                var currentMonthPool = TinybeansApi.GetEntriesByYearMonth(currentYearMonth.Date, actualJournalId);
+                if (currentMonthPool != null)
+                    pool.AddRange(currentMonthPool);
 
                 // add a month to "current" tracker
                 currentYearMonth = currentYearMonth.AddMonths(1);
