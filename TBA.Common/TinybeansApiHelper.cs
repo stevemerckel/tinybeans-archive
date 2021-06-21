@@ -103,7 +103,7 @@ namespace TBA.Common
 
                 var fileName = Guid.NewGuid().ToString("N");
                 var destinationLocation = _fileManager.PathCombine(destinationDirectory, $"{fileName}.txt");
-                _fileManager.FileWriteText(destinationDirectory, archive.Caption, System.Text.Encoding.Unicode);
+                _fileManager.FileWriteText(destinationLocation, archive.Caption, System.Text.Encoding.Unicode);
                 return new EntryDownloadInfo(archive.Id, destinationLocation, null, null);
             }
 

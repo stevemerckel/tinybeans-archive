@@ -108,7 +108,7 @@ namespace TBA.Common
             if (string.IsNullOrWhiteSpace(fileLocation))
                 throw new ArgumentNullException(nameof(fileLocation), "Value cannot be null or empty.");
 
-            //ConsiderDestinationDirectoryFolderCreation(fileLocation);
+            ConsiderDestinationDirectoryFolderCreation(fileLocation);
 
             try
             {
@@ -132,7 +132,7 @@ namespace TBA.Common
             if (string.IsNullOrWhiteSpace(fileLocation))
                 throw new ArgumentNullException(nameof(fileLocation), "Value cannot be null or empty.");
 
-            //ConsiderDestinationDirectoryFolderCreation(fileLocation);
+            ConsiderDestinationDirectoryFolderCreation(fileLocation);
 
             try
             {

@@ -13,8 +13,8 @@ namespace TBA.Sandbox
         {
             const int MonthCount = 60;
             var now = DateTime.Now.Date;
-            var rangeStart = now.AddMonths(-1 * MonthCount);
-            var rangeEnd = now;
+            var rangeStart = new DateTime(2020, 8, 01); // now.AddMonths(-1 * MonthCount);
+            var rangeEnd = rangeStart.AddMonths(2); // now;
 
             var logger = _kernel.Get<IAppLogger>();
             logger.Info("Hello World!");
