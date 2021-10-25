@@ -87,27 +87,29 @@ namespace TBA.Tests
         }
 
         [Test]
-        public void Test_SettingsThreadCountOutsideRangeIsInvalid_Fail()
-        {
-            var settings = GetRuntimeSettingsInstance();
-            var originalMaxThreadCount = settings.MaxThreadCount;
-
-            Assert.Multiple(() =>
-            {
-                settings.MaxThreadCount = ExpectedMinThreadCountAllowed - 1;
-                Assert.Throws<SettingsFailureException>(() => settings.ValidateSettings());
-                settings.MaxThreadCount = ExpectedMaxThreadCountAllowed + 1;
-                Assert.Throws<SettingsFailureException>(() => settings.ValidateSettings());
-            });
-
-            settings.MaxThreadCount = originalMaxThreadCount;
-            Assert.AreEqual(originalMaxThreadCount, settings.MaxThreadCount);
-        }
-
-        [Test]
         public void Test_ExpectedMaxIsNotLessThanMin_Success()
         {
             Assert.IsFalse(ExpectedMaxThreadCountAllowed < ExpectedMinThreadCountAllowed);
+        }
+
+        [TestCase(int.MinValue, 1)]
+        [TestCase(-1, 1)]
+        [TestCase(0, 1)]
+        [TestCase(1, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 3)]
+        [TestCase(4, 4)]
+        [TestCase(5, 5)]
+        [TestCase(6, 6)]
+        [TestCase(7, 7)]
+        [TestCase(8, 8)]
+        [TestCase(9, 8)]
+        [TestCase(int.MaxValue, 8)]
+        public void Test_EnsureThreadCountThresholds_Success(int attemptedThreadCount, int expectedThreadCount)
+        {
+            var rs = _sut.GetRuntimeSettings();
+            rs.MaxThreadCount = attemptedThreadCount;
+            Assert.AreEqual(expectedThreadCount, rs.MaxThreadCount);
         }
 
         [Test]

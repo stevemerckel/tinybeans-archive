@@ -210,14 +210,14 @@ namespace TBA.Common
                                     var msg = $"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  {webEx}";
                                     if (webEx.InnerException != null)
                                         msg += $"{Environment.NewLine}*** INNER EXCEPTION *** -- {webEx.InnerException}";
-                                    _logger.Error($"{nameof(WebException)} thrown trying to download file '{x.SourceUrl}' for date {x.DisplayedOn.ToString("yyyy-MM-dd")} -- Details: {webEx}");
+                                    _logger.Error($"{nameof(WebException)} thrown trying to download file '{x.SourceUrl}' for date {x.DisplayedOn:yyyy-MM-dd} -- Details: {webEx}");
                                 }
                                 catch (Exception ex)
                                 {
                                     var msg = $"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  {ex}";
                                     if (ex.InnerException != null)
                                         msg += $"{Environment.NewLine}*** INNER EXCEPTION *** -- {ex.InnerException}";
-                                    _logger.Error($"{nameof(Exception)} thrown trying to download file '{x.SourceUrl}' for date {x.DisplayedOn.ToString("yyyy-MM-dd")} -- Details: {ex}");
+                                    _logger.Error($"{nameof(Exception)} thrown trying to download file '{x.SourceUrl}' for date {x.DisplayedOn:yyyy-MM-dd} -- Details: {ex}");
                                 }
 
                                 if (!isProcessed)
@@ -282,7 +282,7 @@ namespace TBA.Common
                 //          then ensure the emoji is written as unicode (i.e. "\u" prefix)
                 //
 
-                _logger.Debug($"Finished writing manifest for days in '{currentMonthArchives.First().DisplayedOn.ToString("yyyy-MM")}'");
+                _logger.Debug($"Finished writing manifest for days in '{currentMonthArchives.First().DisplayedOn:yyyy-MM}'");
 
                 // add a month to "current" tracker
                 currentYearMonth = currentYearMonth.AddMonths(1);
@@ -297,7 +297,7 @@ namespace TBA.Common
 
                 // write yyyy-MM manifests in month directories
                 var uniqueYearMonths = archives
-                    .Select(x => new { Year = x.DisplayedOn.Year, Month = x.DisplayedOn.Month })
+                    .Select(x => new { x.DisplayedOn.Year, x.DisplayedOn.Month })
                     .Distinct();
 
                 foreach(var ym in uniqueYearMonths)
@@ -328,7 +328,7 @@ namespace TBA.Common
         private string DeterminePathToWriteDayJsonManifest(ITinybeansEntry archive, string root)
         {
             var targetDirectory = DeterminePathToArchiveDirectory(archive, root);
-            var manifestFileName = $"manifest.{archive.DisplayedOn.ToString("yyyy-MM-dd")}.json";
+            var manifestFileName = $"manifest.{archive.DisplayedOn:yyyy-MM-dd}.json";
             return FileManager.PathCombine(targetDirectory, manifestFileName);
         }
 

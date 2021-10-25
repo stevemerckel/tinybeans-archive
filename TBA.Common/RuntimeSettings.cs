@@ -8,6 +8,8 @@ namespace TBA.Common
     [DebuggerDisplay(nameof(ApiBaseUrl) + "={ApiBaseUrl} -- " + nameof(MaxThreadCount) + "={MaxThreadCount}")]
     public class RuntimeSettings : IRuntimeSettings
     {
+        private int _maxThreadCount;
+
         /// <summary>
         /// Creates an empty runtime settings object
         /// </summary>
@@ -41,8 +43,22 @@ namespace TBA.Common
         [JsonProperty("api/base-url")]
         public string ApiBaseUrl { get; set; }
 
+        /// <inheritdoc />
         [JsonProperty("max-thread-count")]
-        public int MaxThreadCount { get; set; }
+        public int MaxThreadCount
+        {
+            get
+            {
+                if (_maxThreadCount < 2)
+                    return 1; // minimum enforcement
+
+                return _maxThreadCount > 8 ? 8 : _maxThreadCount;
+            }
+            set
+            {
+                _maxThreadCount = value;
+            }
+        }
 
         /// <inheritdoc />
         public bool ValidateSettings()
@@ -76,7 +92,7 @@ namespace TBA.Common
                 Console.WriteLine($"Failed on {nameof(MaxThreadCount)} -- value = {MaxThreadCount}");
                 isValid = false;
             }
-            
+
             try
             {
                 new Uri(ApiBaseUrl);

@@ -7,6 +7,11 @@ namespace TBA.Common
     /// </summary>
     public abstract class Person
     {
+        public Person() // todo: implement pass-thru of values from sub-classes
+        {
+
+        }
+
         /// <summary>
         /// Unique ID for this person
         /// </summary>
@@ -25,7 +30,7 @@ namespace TBA.Common
         /// <summary>
         /// Friendly presentation the full name
         /// </summary>
-        public string FullName => FirstName?.Trim() + " " + LastName?.Trim();
+        public string FullName => $"{FirstName?.Trim() ?? string.Empty} {LastName?.Trim() ?? string.Empty}".Trim();
 
         /// <summary>
         /// The person's gender
@@ -33,7 +38,7 @@ namespace TBA.Common
         public Gender Gender { get; set; }
 
         /// <summary>
-        /// Date when the person was born -- assume it is local
+        /// Date when the person was born -- just assume it is local
         /// </summary>
         public DateTime BornOn { get; set; }
 
@@ -51,7 +56,8 @@ namespace TBA.Common
             {
                 "M" => Gender.Male,
                 "F" => Gender.Female,
-                _ => throw new ArgumentException($"Unable to convert value '{firstCharacter}' into type {nameof(Gender)} !!"),
+                //_ => throw new ArgumentException($"Unable to convert value '{firstCharacter}' into type {nameof(Gender)} !!"),
+                _ => Gender.Unknown
             };
         }
     }

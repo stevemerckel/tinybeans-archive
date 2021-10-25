@@ -133,7 +133,7 @@ namespace TBA.Common
                 }
 
                 WebClient wc = null;
-
+                string redirectUrl = null;
                 try
                 {
                     wc = new WebClient();
@@ -146,6 +146,26 @@ namespace TBA.Common
                         _logger.Debug($"Finished download of '{d.Item1 ?? "[NULL]"}' to '{d.Item2}'");
                     });
                 }
+                catch (WebException webEx)
+                {
+                    var response = webEx.Response as HttpWebResponse;
+                    if (response != null)
+                    {
+                        var statusCode = (int)response.StatusCode;
+                        if (statusCode >= 300 && statusCode < 400)
+                        {
+                            // capture redirect url
+                            redirectUrl = response.Headers["Location"];
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(redirectUrl))
+                    {
+                        // no redirect url provided, so just throw the exception
+                        _logger.Debug($"{nameof(WebException)} thrown trying to download '{archive.SourceUrl ?? "[NULL]"}' -- details: {webEx}");
+                        throw;
+                    }
+                }
                 catch (Exception ex)
                 {
                     _logger.Debug($"{nameof(Exception)} thrown trying to download '{archive.SourceUrl ?? "[NULL]"}' -- details: {ex}");
@@ -155,6 +175,8 @@ namespace TBA.Common
                 {
                     wc?.Dispose();
                 }
+
+                
 
                 return new EntryDownloadInfo(archive.Id, mainContentLocation, thumbRectLocation, thumbSquareLocation);
             }
