@@ -24,14 +24,13 @@ namespace TBA.Sandbox
                 }
             }
 
-            WebClient301Test();
-            Console.WriteLine("EOP");
-            Console.ReadLine();
-            return;
+            //WebClient301Test();
+            //Console.WriteLine("EOP");
+            //Console.ReadLine();
+            //return;
 
 
             const int MonthCount = 60;
-            var now = DateTime.Now.Date;
             var rangeStart = new DateTime(2020, 7, 01); // now.AddMonths(-1 * MonthCount);
             var rangeEnd = rangeStart.AddMonths(3); // now;
 
@@ -85,12 +84,13 @@ namespace TBA.Sandbox
         private static void Test02(IAppLogger logger, DateTime rangeStart, DateTime rangeEnd)
         {
             var jm = _kernel.Get<IJournalManager>();
+            var runtimeSettings = _kernel.Get<IRuntimeSettingsProvider>().GetRuntimeSettings();
             var journalSummaries = jm.GetJournalSummaries();
             logger.Info($"Found journals: Count = {journalSummaries?.Count ?? 0}");
             journalSummaries?.ForEach(x => logger.Info($"  {x}"));
             var journalId = journalSummaries.First().Id;
             var archives = jm.GetArchives(journalId.ToString(), rangeStart, rangeEnd);
-            logger.Info($"Found {archives.Count} archives.  Writing to disk now...");
+            logger.Info($"Found {archives.Count} archives.  Using {runtimeSettings.MaxThreadCount} thread(s) to fetch + write to disk now...");
             jm.WriteArchivesToFileSystem(archives);
             logger.Info($"Wrote {archives.Count} archives to disk.");
         }

@@ -6,7 +6,7 @@ namespace TBA.Common
 {
     /// <inheritdoc />
     [DebuggerDisplay(nameof(ApiBaseUrl) + "={ApiBaseUrl} -- " + nameof(MaxThreadCount) + "={MaxThreadCount}")]
-    public class RuntimeSettings : IRuntimeSettings
+    public sealed class RuntimeSettings : IRuntimeSettings
     {
         private const int MinAllowedThreadCount = 1;
         private const int MaxAllowedThreadCount = 8;

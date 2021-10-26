@@ -45,6 +45,12 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
+        public event EventHandler<EntryDownloadInfo> DownloadSucceeded;
+
+        /// <inheritdoc />
+        public event EventHandler<EntryDownloadInfo> DownloadFailed;
+
+        /// <inheritdoc />
         public IFileManager FileManager { get; private set; }
 
         /// <inheritdoc />
@@ -168,78 +174,76 @@ namespace TBA.Common
 
             var sw = new Stopwatch();
             sw.Start();
-            if (_runtimeSettings.MaxThreadCount < 2)
+
+            // multithread the workload, divying-out based on max thread count
+            var poolSize = (int)Math.Ceiling(archives.Count / (double)_runtimeSettings.MaxThreadCount);
+            var groups = SplitList(archives, poolSize);
+            var threads = new List<Task>();
+            var groupSplitInfo = new List<long>();
+
+            foreach (var g in groups)
             {
-                // process serially
-                foreach (var a in archives)
+                var task = new Task(() =>
                 {
-                    var result = downloadBehavior.Invoke(a);
-                    localPathDictionary.Add(result);
-                }
-            }
-            else
-            {
-                // multithread the workload
-                var poolSize = (int)Math.Ceiling(archives.Count / (double)_runtimeSettings.MaxThreadCount);
-                var groups = SplitList(archives, poolSize);
-                var threads = new List<Task>();
-                var groupSplitInfo = new List<long>();
-                foreach (var g in groups)
-                {
-                    var task = new Task(() =>
+                    const int DelayInMs = 5000;
+                    const int MaxAttemptCount = 3;
+
+                    g.ForEach(x =>
                     {
-                        const int DelayInMs = 5000;
-                        const int MaxAttemptCount = 3;
-
-                        g.ForEach(x =>
+                        var isProcessed = false;
+                        EntryDownloadInfo currentDownload = null;
+                        for (var i = 0; i < MaxAttemptCount; i++)
                         {
-                            var isProcessed = false;
-                            for (var i = 0; i < MaxAttemptCount; i++)
+                            if (isProcessed)
+                                break;
+
+                            try
                             {
-                                if (isProcessed)
-                                    break;
-
-                                try
-                                {
-                                    var result = downloadBehavior.Invoke(x);
-                                    localPathDictionary.Add(result);
-                                    isProcessed = true;
-                                }
-                                catch (WebException webEx)
-                                {
-                                    var msg = $"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  {webEx}";
-                                    if (webEx.InnerException != null)
-                                        msg += $"{Environment.NewLine}*** INNER EXCEPTION *** -- {webEx.InnerException}";
-                                    _logger.Error($"{nameof(WebException)} thrown trying to download file '{x.SourceUrl}' for date {x.DisplayedOn:yyyy-MM-dd} -- Details: {webEx}");
-                                }
-                                catch (Exception ex)
-                                {
-                                    var msg = $"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  {ex}";
-                                    if (ex.InnerException != null)
-                                        msg += $"{Environment.NewLine}*** INNER EXCEPTION *** -- {ex.InnerException}";
-                                    _logger.Error($"{nameof(Exception)} thrown trying to download file '{x.SourceUrl}' for date {x.DisplayedOn:yyyy-MM-dd} -- Details: {ex}");
-                                }
-
-                                if (!isProcessed)
-                                {
-                                    var totalDelayInMs = (i * DelayInMs) + DelayInMs;
-                                    _logger.Warn($"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  Failed attempt #{i + 1} at downloading '{x.SourceUrl}'.  Going to wait {totalDelayInMs} milliseconds and try again.");
-                                    Thread.Sleep(totalDelayInMs);
-                                }
+                                currentDownload = downloadBehavior.Invoke(x);
+                                localPathDictionary.Add(currentDownload);
+                                isProcessed = true;
+                            }
+                            catch (WebException webEx)
+                            {
+                                var msg = $"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  {webEx}";
+                                if (webEx.InnerException != null)
+                                    msg += $"{Environment.NewLine}*** INNER EXCEPTION *** -- {webEx.InnerException}";
+                                _logger.Error($"{nameof(WebException)} thrown trying to download file '{x.SourceUrl}' for date {x.DisplayedOn:yyyy-MM-dd} -- Details: {webEx}");
+                            }
+                            catch (Exception ex)
+                            {
+                                var msg = $"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  {ex}";
+                                if (ex.InnerException != null)
+                                    msg += $"{Environment.NewLine}*** INNER EXCEPTION *** -- {ex.InnerException}";
+                                _logger.Error($"{nameof(Exception)} thrown trying to download file '{x.SourceUrl}' for date {x.DisplayedOn:yyyy-MM-dd} -- Details: {ex}");
                             }
 
                             if (!isProcessed)
-                                _logger.Error($"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  Failed to download '{x.SourceUrl}' after {MaxAttemptCount} attempts.");
-                        });
-                    }
-                    , TaskCreationOptions.LongRunning);
+                            {
+                                var totalDelayInMs = (i * DelayInMs) + DelayInMs;
+                                _logger.Warn($"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  Failed attempt #{i + 1} at downloading '{x.SourceUrl}'.  Going to wait {totalDelayInMs} milliseconds and try again.");
+                                Thread.Sleep(totalDelayInMs);
+                            }
+                        }
 
-                    threads.Add(task);
+                        if (!isProcessed)
+                        {
+                            _logger.Error($"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  Failed to download '{x.SourceUrl}' after {MaxAttemptCount} attempts.");
+                            DownloadFailed.Invoke(this, currentDownload);
+                            return;
+                        }
+
+                        DownloadSucceeded.Invoke(this, currentDownload);
+                    });
                 }
-                threads.ForEach(x => x.Start());
-                Task.WaitAll(threads.ToArray());
+                , TaskCreationOptions.LongRunning);
+
+                threads.Add(task);
             }
 
+            // start the thread(s) and wait for completion
+            threads.ForEach(x => x.Start());
+            Task.WaitAll(threads.ToArray());
             sw.Stop();
             _logger.Info($"Processing time for downloading {archives.Count} items using {_runtimeSettings.MaxThreadCount} thread(s) was {sw.ElapsedMilliseconds} ms");
 
@@ -300,7 +304,7 @@ namespace TBA.Common
                     .Select(x => new { x.DisplayedOn.Year, x.DisplayedOn.Month })
                     .Distinct();
 
-                foreach(var ym in uniqueYearMonths)
+                foreach (var ym in uniqueYearMonths)
                 {
                     var yearDir = FileManager.PathCombine(journalDir, ym.Year.ToString());
                     var monthFolderName = ym.Month.ToString().PadLeft(2, '0');

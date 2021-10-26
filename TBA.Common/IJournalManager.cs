@@ -43,5 +43,15 @@ namespace TBA.Common
         /// Get the root path for reading/writing the archived content on the file system
         /// </summary>
         string Root { get; }
+
+        /// <summary>
+        /// Event that broadcasts when an archive was successfully downloaded -- it is the opposite to <see cref="DownloadFailed"/>
+        /// </summary>
+        event EventHandler<EntryDownloadInfo> DownloadSucceeded;
+
+        /// <summary>
+        /// Event that broadcasts when an archive failed to download -- it is the opposite to <see cref="DownloadSucceeded"/>
+        /// </summary>
+        event EventHandler<EntryDownloadInfo> DownloadFailed;
     }
 }

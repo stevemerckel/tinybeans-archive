@@ -8,7 +8,7 @@ namespace TBA.Common
     /// Summary info for the journal
     /// </summary>
     [DebuggerDisplay("[{Id}]  {Title} with {Children?.Count ?? 0} children ({Url})")]
-    public class JournalSummary
+    public sealed class JournalSummary
     {
         /// <summary>
         /// The journal ID at Tinybeans
