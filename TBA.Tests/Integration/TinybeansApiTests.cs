@@ -17,7 +17,7 @@ namespace TBA.Tests.Integration
         /// <remarks>
         /// Initializes the static objects for later consumption by the default ctor
         /// </remarks>
-        static TinybeansApiTests()
+        static TinybeansApiTests() 
         {
             _fileManager = new WindowsFileSystemManager();
             _runtimeSettingsProvider = new RuntimeSettingsProvider(_fileManager);
@@ -30,12 +30,6 @@ namespace TBA.Tests.Integration
         /// </summary>
         public TinybeansApiTests() : base(_sut)
         {
-        }
-
-        [Test]
-        public void Test_DummyTest_Success()
-        {
-            Assert.IsTrue(true);
         }
     }
 }

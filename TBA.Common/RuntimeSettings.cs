@@ -8,7 +8,12 @@ namespace TBA.Common
     [DebuggerDisplay(nameof(ApiBaseUrl) + "={ApiBaseUrl} -- " + nameof(MaxThreadCount) + "={MaxThreadCount}")]
     public class RuntimeSettings : IRuntimeSettings
     {
+        private const int MinAllowedThreadCount = 1;
+        private const int MaxAllowedThreadCount = 8;
         private int _maxThreadCount;
+        private string _authorizationHeaderKey;
+        private string _authorizationHeaderValue;
+        private string _apiBaseUrl;
 
         /// <summary>
         /// Creates an empty runtime settings object
@@ -26,22 +31,35 @@ namespace TBA.Common
         /// <param name="threadCount"></param>
         public RuntimeSettings(string authorizationHeaderKey, string authorizationHeaderValue, string apiBaseUrl, int threadCount)
         {
-            AuthorizationHeaderKey = authorizationHeaderKey;
-            AuthorizationHeaderValue = authorizationHeaderValue;
-            ApiBaseUrl = apiBaseUrl;
+            AuthorizationHeaderKey = authorizationHeaderKey?.Trim() ?? string.Empty;
+            AuthorizationHeaderValue = authorizationHeaderValue.Trim() ?? string.Empty;
+            ApiBaseUrl = apiBaseUrl.Trim() ?? string.Empty;
+            MaxThreadCount = threadCount;
         }
 
         /// <inheritdoc />
         [JsonProperty("api/auth-header-name")]
-        public string AuthorizationHeaderKey { get; set; }
+        public string AuthorizationHeaderKey
+        {
+            get => _authorizationHeaderKey;
+            set => _authorizationHeaderKey = value?.Trim() ?? string.Empty;
+        }
 
         /// <inheritdoc />
         [JsonProperty("api/auth-header-value")]
-        public string AuthorizationHeaderValue { get; set; }
+        public string AuthorizationHeaderValue
+        {
+            get => _authorizationHeaderValue;
+            set => _authorizationHeaderValue = value?.Trim() ?? string.Empty;
+        }
 
         /// <inheritdoc />
         [JsonProperty("api/base-url")]
-        public string ApiBaseUrl { get; set; }
+        public string ApiBaseUrl 
+        { 
+            get => _apiBaseUrl; 
+            set => _apiBaseUrl = value?.Trim() ?? string.Empty; 
+        }
 
         /// <inheritdoc />
         [JsonProperty("max-thread-count")]
@@ -49,10 +67,10 @@ namespace TBA.Common
         {
             get
             {
-                if (_maxThreadCount < 2)
-                    return 1; // minimum enforcement
+                if (_maxThreadCount <= MinAllowedThreadCount)
+                    return MinAllowedThreadCount; // minimum enforcement
 
-                return _maxThreadCount > 8 ? 8 : _maxThreadCount;
+                return _maxThreadCount > MaxAllowedThreadCount ? MaxAllowedThreadCount : _maxThreadCount;
             }
             set
             {
@@ -83,13 +101,6 @@ namespace TBA.Common
             if (string.IsNullOrWhiteSpace(ApiBaseUrl))
             {
                 Console.WriteLine($"Failed on string parse of {nameof(ApiBaseUrl)} -- value = '{(string.IsNullOrWhiteSpace(ApiBaseUrl) ? "[NULL/EMPTY]" : ApiBaseUrl)}'");
-                isValid = false;
-            }
-
-            // max thread count
-            if (MaxThreadCount < 1 || MaxThreadCount > 8)
-            {
-                Console.WriteLine($"Failed on {nameof(MaxThreadCount)} -- value = {MaxThreadCount}");
                 isValid = false;
             }
 
