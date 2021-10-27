@@ -43,14 +43,14 @@ namespace TBA.Tests
         public void Test_BaselineAssertions_Success()
         {
             Assert.IsNotNull(_sut);
-            Assert.IsNotNull(_sut.GetRuntimeSettings());
+            Assert.IsNotNull(GetRuntimeSettingsInstance());
             DefaultMocks.MockLogger.Info($"Finished '{nameof(Test_BaselineAssertions_Success)}' method:  {nameof(_isRuntimeSettingsProviderFake)} was {_isRuntimeSettingsProviderFake}");
         }
 
         [Test]
         public void Test_SettingsAreValid_Success()
         {
-            var settings = _sut.GetRuntimeSettings();
+            var settings = GetRuntimeSettingsInstance();
             var isValid = settings.ValidateSettings();
             Assert.IsTrue(isValid);
         }
@@ -107,9 +107,39 @@ namespace TBA.Tests
         [TestCase(int.MaxValue, ExpectedMaxThreadCountAllowed)]
         public void Test_EnsureThreadCountThresholds_Success(int attemptedThreadCount, int expectedThreadCount)
         {
-            var rs = _sut.GetRuntimeSettings();
+            var rs = GetRuntimeSettingsInstance();
             rs.MaxThreadCount = attemptedThreadCount;
             Assert.AreEqual(expectedThreadCount, rs.MaxThreadCount);
+        }
+
+        [TestCase(null, ExpectedResult = "")]
+        [TestCase("", ExpectedResult = "")]
+        [TestCase("    ", ExpectedResult = "")]
+        public string Test_ApiBaseUrl_GetterAlwaysTrimmed_Success(string input)
+        {
+            var rs = GetRuntimeSettingsInstance();
+            rs.ApiBaseUrl = input;
+            return rs.ApiBaseUrl;
+        }
+
+        [TestCase(null, ExpectedResult = "")]
+        [TestCase("", ExpectedResult = "")]
+        [TestCase("    ", ExpectedResult = "")]
+        public string Test_AuthorizationHeaderKey_GetterAlwaysTrimmed_Success(string input)
+        {
+            var rs = GetRuntimeSettingsInstance();
+            rs.AuthorizationHeaderKey = input;
+            return rs.AuthorizationHeaderKey;
+        }
+
+        [TestCase(null, ExpectedResult = "")]
+        [TestCase("", ExpectedResult = "")]
+        [TestCase("    ", ExpectedResult = "")]
+        public string Test_AuthorizationHeaderValue_GetterAlwaysTrimmed_Success(string input)
+        {
+            var rs = GetRuntimeSettingsInstance();
+            rs.AuthorizationHeaderValue = input;
+            return rs.AuthorizationHeaderValue;
         }
 
         [Test]
