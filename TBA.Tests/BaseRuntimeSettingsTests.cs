@@ -92,9 +92,9 @@ namespace TBA.Tests
             Assert.IsFalse(ExpectedMaxThreadCountAllowed < ExpectedMinThreadCountAllowed);
         }
 
-        [TestCase(int.MinValue, 1)]
-        [TestCase(-1, 1)]
-        [TestCase(0, 1)]
+        [TestCase(int.MinValue, ExpectedMinThreadCountAllowed)]
+        [TestCase(-1, ExpectedMinThreadCountAllowed)]
+        [TestCase(0, ExpectedMinThreadCountAllowed)]
         [TestCase(1, 1)]
         [TestCase(2, 2)]
         [TestCase(3, 3)]
@@ -103,8 +103,8 @@ namespace TBA.Tests
         [TestCase(6, 6)]
         [TestCase(7, 7)]
         [TestCase(8, 8)]
-        [TestCase(9, 8)]
-        [TestCase(int.MaxValue, 8)]
+        [TestCase(9, ExpectedMaxThreadCountAllowed)]
+        [TestCase(int.MaxValue, ExpectedMaxThreadCountAllowed)]
         public void Test_EnsureThreadCountThresholds_Success(int attemptedThreadCount, int expectedThreadCount)
         {
             var rs = _sut.GetRuntimeSettings();
