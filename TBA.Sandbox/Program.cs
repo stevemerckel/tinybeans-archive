@@ -31,8 +31,8 @@ namespace TBA.Sandbox
 
 
             const int MonthCount = 60;
-            var rangeStart = new DateTime(2020, 7, 01); // now.AddMonths(-1 * MonthCount);
-            var rangeEnd = rangeStart.AddMonths(3); // now;
+            var rangeStart = new DateTime(2017, 1, 1); // now.AddMonths(-1 * MonthCount);
+            var rangeEnd = rangeStart.AddMonths(72); // now;
 
             var logger = _kernel.Get<IAppLogger>();
             logger.Info("Hello World!");

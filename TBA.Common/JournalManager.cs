@@ -12,7 +12,7 @@ namespace TBA.Common
     /// <summary>
     /// Implementation of <see cref="IJournalManager"/>
     /// </summary>
-    public sealed class JournalManager : IJournalManager
+    public class JournalManager : IJournalManager
     {
         private readonly IAppLogger _logger;
         private readonly IRuntimeSettings _runtimeSettings;
@@ -229,11 +229,11 @@ namespace TBA.Common
                         if (!isProcessed)
                         {
                             _logger.Error($"[ThreadId={Thread.CurrentThread.ManagedThreadId}]  Failed to download '{x.SourceUrl}' after {MaxAttemptCount} attempts.");
-                            DownloadFailed.Invoke(this, currentDownload);
+                            OnDownloadFailed(currentDownload);
                             return;
                         }
 
-                        DownloadSucceeded.Invoke(this, currentDownload);
+                        OnDownloadSucceeded(currentDownload);
                     });
                 }
                 , TaskCreationOptions.LongRunning);
@@ -419,6 +419,24 @@ namespace TBA.Common
                 _logger.Warn($"Not all of the JSON files were processed!  Look earlier in the log for details.  (expected {jsonFiles.Count()} but only completed {fileProcessedCount})");
 
             return archives;
+        }
+
+        /// <summary>
+        /// Broadcaster entry point for <see cref="DownloadSucceeded"/>
+        /// </summary>
+        /// <param name="download">The download that succeeded</param>
+        protected virtual void OnDownloadSucceeded(EntryDownloadInfo download)
+        {
+            DownloadSucceeded?.Invoke(this, download);
+        }
+
+        /// <summary>
+        /// Broadcaster entry point for <see cref="DownloadFailed"/>
+        /// </summary>
+        /// <param name="download">The download that failed</param>
+        protected virtual void OnDownloadFailed(EntryDownloadInfo download)
+        {
+            DownloadFailed?.Invoke(this, download);
         }
     }
 }
