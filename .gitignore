@@ -5,6 +5,7 @@
 
 # TBA-specific excludes
 runtime.settings
+day-entry-*.json
 
 # User-specific files
 *.rsuser

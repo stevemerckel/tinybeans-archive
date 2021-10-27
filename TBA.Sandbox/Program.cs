@@ -32,7 +32,7 @@ namespace TBA.Sandbox
 
             const int MonthCount = 60;
             var rangeStart = new DateTime(2017, 1, 1); // now.AddMonths(-1 * MonthCount);
-            var rangeEnd = rangeStart.AddMonths(72); // now;
+            var rangeEnd = rangeStart.AddMonths(12); // now;
 
             var logger = _kernel.Get<IAppLogger>();
             logger.Info("Hello World!");
@@ -84,6 +84,8 @@ namespace TBA.Sandbox
         private static void Test02(IAppLogger logger, DateTime rangeStart, DateTime rangeEnd)
         {
             var jm = _kernel.Get<IJournalManager>();
+            jm.DownloadFailed += WriteFailed;
+            jm.DownloadSucceeded += WriteSuccess;
             var runtimeSettings = _kernel.Get<IRuntimeSettingsProvider>().GetRuntimeSettings();
             var journalSummaries = jm.GetJournalSummaries();
             logger.Info($"Found journals: Count = {journalSummaries?.Count ?? 0}");
@@ -93,6 +95,18 @@ namespace TBA.Sandbox
             logger.Info($"Found {archives.Count} archives.  Using {runtimeSettings.MaxThreadCount} thread(s) to fetch + write to disk now...");
             jm.WriteArchivesToFileSystem(archives);
             logger.Info($"Wrote {archives.Count} archives to disk.");
+            jm.DownloadFailed -= WriteFailed;
+            jm.DownloadSucceeded -= WriteSuccess;
+        }
+
+        private static void WriteFailed(object sender, EntryDownloadInfo info)
+        {
+            Console.WriteLine($"[FAILED]  {info.ArchiveId}");
+        }
+
+        private static void WriteSuccess(object sender, EntryDownloadInfo info)
+        {
+            Console.WriteLine($"[SUCCESS]  {info.ArchiveId} at {info.LocalUri}");
         }
 
         private static void Test01(IAppLogger logger, DateTime rangeStart, DateTime rangeEnd)
