@@ -176,8 +176,6 @@ namespace TBA.Common
                     wc?.Dispose();
                 }
 
-                
-
                 return new EntryDownloadInfo(archive.Id, mainContentLocation, thumbRectLocation, thumbSquareLocation);
             }
 
@@ -220,7 +218,7 @@ namespace TBA.Common
             request.Headers.AcceptEncoding.Add(new System.Net.Http.Headers.StringWithQualityHeaderValue("deflate"));
 
             HttpResponseMessage response = _httpClient.SendAsync(request).Result;
-            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            if (response.StatusCode != HttpStatusCode.OK)
             {
                 // some failure happened
                 var code = (int)response.StatusCode;
@@ -246,14 +244,14 @@ namespace TBA.Common
             {
                 using (GZipStream stream = new GZipStream(new MemoryStream(response.Content.ReadAsByteArrayAsync().Result), CompressionMode.Decompress))
                 {
-                    const int size = 4096;
-                    byte[] buffer = new byte[size];
+                    const int Size = 4096;
+                    byte[] buffer = new byte[Size];
                     using (MemoryStream memory = new MemoryStream())
                     {
                         int count = 0;
                         do
                         {
-                            count = stream.Read(buffer, 0, size);
+                            count = stream.Read(buffer, 0, Size);
                             if (count > 0)
                             {
                                 memory.Write(buffer, 0, count);
