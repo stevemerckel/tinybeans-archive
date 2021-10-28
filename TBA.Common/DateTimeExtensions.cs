@@ -67,9 +67,6 @@ namespace TBA.Common
         /// <returns>Boolean indicating between (<c>true</c>) or outside of range (<c>false</c>).</returns>
         public static bool IsBetween(this DateTime source, DateTime start, DateTime end)
         {
-            if (source == null || start == null || end == null)
-                return false; // fail safe
-
             return start <= source && source <= end;
         }
     }
