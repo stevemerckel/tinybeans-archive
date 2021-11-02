@@ -16,7 +16,7 @@ After some Google-ing, I found someone else had made a similar idea [built in Cl
 
 The following list summarizes the tech stack:
 
-* .NET Core (v3.1)
+* .NET (v5)
 * JSON (via [NewtonSoft.Json](https://www.nuget.org/packages/Newtonsoft.Json/))
 * Inversion of Control (via [Ninject](https://www.nuget.org/packages/ninject))
 * Unit Testing (via [NUnit](https://www.nuget.org/packages/nunit))
@@ -30,6 +30,8 @@ There is an optional testbed project called `TBA.Sandbox` for doing ad-hoc testi
 The bulk of business logic is in `TBA.Common`.  A good starting point would be the looking at the methods and functions in `JournalManager.cs`.
 
 Tests are contained in `TBA.Tests` project.
+
+A web API for fetching moment-data is in `TBA.Api`.  Note that this project uses the _InternalsVisibleTo_ attribute to allow internal objects to be testable.
 
 ## Running for the First Time
 
