@@ -12,7 +12,7 @@ namespace TBA.Tests
         /// <summary>
         /// Returns the path to the directory that is executing the test
         /// </summary>
-        public string TestExecutionDirectory => TestContext.CurrentContext.TestDirectory;
+        public static string TestExecutionDirectory => TestContext.CurrentContext.TestDirectory;
 
         public TestBase()
         {

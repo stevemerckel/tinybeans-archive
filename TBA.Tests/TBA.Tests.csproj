@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TBA.Api\TBA.Api.csproj" />
     <ProjectReference Include="..\TBA.Common\TBA.Common.csproj" />
   </ItemGroup>
 
