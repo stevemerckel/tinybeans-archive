@@ -20,6 +20,9 @@ The following list summarizes the tech stack:
 * JSON (via [NewtonSoft.Json](https://www.nuget.org/packages/Newtonsoft.Json/))
 * Inversion of Control (via [Ninject](https://www.nuget.org/packages/ninject))
 * Unit Testing (via [NUnit](https://www.nuget.org/packages/nunit))
+* npm (v8)
+* Node.js (v16)
+* Angular CLI (v12)
 
 ## Solution Overview and Debugging
 
@@ -33,7 +36,7 @@ Tests are contained in `TBA.Tests` project.
 
 A web API for fetching moment-data is in `TBA.Api`.  Note that this project uses the _InternalsVisibleTo_ attribute to allow internal objects to be testable.
 
-## Running for the First Time
+## Running Console App for the First Time
 
 In the `$/assets` directory is a file called `runtime.settings.TEMPLATE`.  Make a copy of this file, and name it `runtime.settings`.  This will also resolve any build issues.
 
@@ -61,6 +64,10 @@ Notes on the above:
 * The application will need full permissions to the _Root Directory_.
 * A `[dd]` directory will be created only when at least one entry exists for the target date.  Same concept applies to the `[MM]` directory.
 * Each _yyyy-MM-dd_ directory will have a JSON file called `manifest.[yyyy-MM-dd].json`, which contains metadata about the content in that day.
+
+## Running the Website and API
+
+TODO: Finish this section!
 
 ## Future Plans
 

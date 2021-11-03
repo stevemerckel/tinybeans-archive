@@ -7,7 +7,9 @@ package-lock.json
 
 
 ###############################
+## Angular exclusions, copied from ".gitignore" created from this command: ng new tinybeans-moment-viewer/
 ## See http://help.github.com/ignore-files/ for more about ignoring files.
+## Note that some alterations were done to include parent directory structure, but the principles are essentially untouched.
 ###############################
 
 # compiled output
