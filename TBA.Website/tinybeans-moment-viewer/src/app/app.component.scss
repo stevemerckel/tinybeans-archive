@@ -1,0 +1,23 @@
+:host {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    color: purple;
+}
+
+h1 {
+    color: green;
+}
+
+div {
+    padding: 20px;
+}
+
+input[type=button], input[type=submit], input[type=reset] {
+    background-color: orange;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    margin: 4px 2px;
+    cursor: pointer;
+}

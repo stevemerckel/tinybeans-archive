@@ -6,7 +6,6 @@ namespace TBA.Tests
     /// <summary>
     /// Base class with common elements for testing and requirement checking
     /// </summary>
-    [TestFixture]
     public abstract class TestBase
     {
         /// <summary>
