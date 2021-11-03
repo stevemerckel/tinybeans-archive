@@ -6,6 +6,54 @@ day-entry-*.json
 package-lock.json
 
 
+###############################
+## See http://help.github.com/ignore-files/ for more about ignoring files.
+###############################
+
+# compiled output
+**/tinybeans-moment-viewer/dist
+**/tinybeans-moment-viewer/tmp
+**/tinybeans-moment-viewer/out-tsc
+# Only exists if Bazel was run
+**/tinybeans-moment-viewer/bazel-out
+
+# dependencies
+**/tinybeans-moment-viewer/node_modules
+
+# profiling files
+chrome-profiler-events*.json
+
+# IDEs and editors
+**/tinybeans-moment-viewer/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# misc
+**/tinybeans-moment-viewer/.sass-cache
+**/tinybeans-moment-viewer/connect.lock
+**/tinybeans-moment-viewer/coverage
+**/tinybeans-moment-viewer/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+**/tinybeans-moment-viewer/typings
+
+# System Files
+.DS_Store
+Thumbs.db
+
 
 ###############################
 ## NPM
