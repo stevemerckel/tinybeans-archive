@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Interfaces;
 using TBA.Common;
 
 namespace TBA.Tests.Integration
@@ -30,6 +31,21 @@ namespace TBA.Tests.Integration
         /// </summary>
         public TinybeansApiTests() : base(_sut)
         {
+        }
+
+        [TearDown]
+        public void TestTeardown()
+        {
+            if (TestContext.CurrentContext.Result.Outcome == ResultState.Success)
+                return; // nothing to do
+
+            // look for potential 504 (gateway timeout) errors, and mark as "inconclusive" instead
+            var errorMessage = TestContext.CurrentContext.Result.Message;
+            if (errorMessage.Contains("504") 
+                || errorMessage.Contains("Gateway Timeout", System.StringComparison.InvariantCultureIgnoreCase))
+            {
+                Assert.Inconclusive("504 HIT !!!");
+            }
         }
     }
 }

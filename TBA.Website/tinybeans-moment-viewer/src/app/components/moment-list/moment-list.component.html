@@ -1,0 +1,23 @@
+<div class="moment">
+    <img
+        *ngIf="this.moment.type === 'PHOTO'"
+        [src]="this.moment.url"
+        [alt]="getDisplayName()"
+    >
+    <video
+        *ngIf="this.moment.type === 'VIDEO'"
+        class="video-js"
+        controls
+        preload="auto"
+        width="640px"
+        height="360px"
+        poster=""
+        data-setup='{"fluid": true}'>
+        <source [src]="this.moment.url" type="video/mp4">
+        <p class="vjs-no-js">
+            To view theis video please enable JavaScript, and consider upgrading to a web browser that <a href="https://videojs.com/html5-video-support" target="_blank">supports HTML 5 video</a>.
+        </p>
+    </video>
+    <p *ngIf="hasCaption()" class="caption">{{this.moment.caption}}</p>
+    <p class="momentId">{{this.moment.id}}</p>
+</div>
