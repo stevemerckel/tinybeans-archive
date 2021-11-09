@@ -19,8 +19,8 @@ export class ItemService {
             .pipe(map(response => {
                 console.log('JSON.stringify of objects:', JSON.parse(JSON.stringify(response)));
                 return response;
-            })),
-            catchError(this.handleError);
+            }),
+            catchError(this.handleError));
     }
 
     getSpecificDayInfo(date: String) {
@@ -30,8 +30,8 @@ export class ItemService {
             .pipe(map(response => {
                 console.log('JSON.stringify of objects:', JSON.parse(JSON.stringify(response)));
                 return response;
-            })),
-            catchError(this.handleError);
+            }),
+            catchError(this.handleError));
     }
 
     getSummary() {
@@ -41,8 +41,8 @@ export class ItemService {
             .pipe(map(response => {
                 console.log('JSON.stringify of objects:', JSON.parse(JSON.stringify(response)));
                 return response;
-            })),
-            catchError(this.handleError);
+            }),
+            catchError(this.handleError));
     }
 
     private handleError(error: HttpErrorResponse) {

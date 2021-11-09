@@ -1,5 +1,5 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { JournalMoment } from 'src/app/item-service';
+import { Component, OnInit } from '@angular/core';
+import { ItemService, JournalMoment } from 'src/app/item-service';
 
 @Component({
   selector: 'app-moment-list',
@@ -8,29 +8,61 @@ import { JournalMoment } from 'src/app/item-service';
 })
 export class MomentListComponent implements OnInit {
 
-  @Input() moment!: JournalMoment;
+  moments: JournalMoment[] = [];
+  targetDate = '';
+  isLoading = false;
 
-  constructor() { }
+  constructor(private itemService: ItemService) { }
 
   ngOnInit(): void { }
 
-  public getDisplayName() : string {
-      var url = this.moment.url;  
-      if (url == null || url == '') {
-          return '';
-      }
 
-      
-      var splitIndex = url.lastIndexOf('/');
-      if (splitIndex < 0) {
-          return url;
-      }
 
-      return url.substring(splitIndex);
+  getSelectedDate() {
+    return new Date(this.targetDate + 'T00:00:00');
   }
 
-  public hasCaption() : boolean {
-      var caption = this.moment.caption;
-      return caption !== undefined && caption !== null && caption !== '';
+  getDayMoments() {
+    var dateToUse = this.targetDate === undefined || this.targetDate === ''
+      ? new Date()
+      : new Date(this.targetDate);
+
+    this.targetDate = dateToUse.toISOString().split('T')[0];
+    this.isLoading = true;
+    this.itemService.getSpecificDayInfo(this.targetDate)
+      .subscribe(moments => {
+        const delayInMs = 3000;  // artificial padding to simulate large server-side action
+        console.log('sleeping for ', delayInMs, ' ms');
+        setTimeout(() => {
+          this.isLoading = false;
+          console.log(`done with sleeping for ${delayInMs} ms`);
+        }, delayInMs);
+      });
+  }
+
+  changeDate() {
+    var found = prompt('What date would you like?', this.targetDate);
+    if (found === undefined || found === '') {
+      return;
+    }
+    console.log('found ', found);
+    var converted = Date.parse(found?.trim() ?? '');
+    if (converted === undefined || converted === NaN) {
+      return;
+    }
+    console.log('converted ', converted);
+    this.targetDate = new Date(found?.trim() ?? '').toISOString().split('T')[0];
+    console.log(this.targetDate);
+    this.getDayMoments();
+  }
+
+  // @ts-ignore -- reason: ignore for now until proper type can be decided
+  dateSelected(change, event) {
+    console.log(event.value.toString());
+    console.log(event.value);
+    var converted = Date.parse(event.value);
+    console.log('converted ', converted);
+    this.targetDate = new Date(event.value).toISOString().split('T')[0];
+    this.getDayMoments();
   }
 }

@@ -19,9 +19,14 @@ export class FamilyInfoComponent implements OnInit {
 
   getJournalSummary() {
     this.itemService.getSummary()
-      .subscribe(summary => {
+      .subscribe((summary: JournalSummary) => {
         this.journalSummary = summary;
-    })
+    });
+  }
+
+  toggleMemberVisibility() {
+    console.log(`changing ${this.isMemberNamesHidden} to ${!this.isMemberNamesHidden}`);
+    this.isMemberNamesHidden = !this.isMemberNamesHidden;
   }
 
 }

@@ -1,4 +1,7 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using TBA.Common;
 
@@ -33,7 +36,42 @@ namespace TBA.Tests.Integration
         {
         }
 
-        [TearDown]
+        [Test]
+        //[GatewayTimeoutInconclusive]
+        [RetryOnGatewayTimeout(3)]
+        public async Task TestGatewayTimeout()
+        {
+            const string BaseUrl = "https://localhost:44343/";
+            //const string Endpoint = "api/";
+            const string Endpoint = "api/gt";
+
+            Console.WriteLine("Hitting URL: " + BaseUrl);
+            HttpClient client = null;
+            try
+            {
+                client = new HttpClient
+                {
+                    BaseAddress = new Uri(BaseUrl)
+                };
+                Console.WriteLine("Endpoint = " + Endpoint);
+                var response = await client.GetAsync(Endpoint);
+                Console.WriteLine("response = " + response);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
+            }
+            finally
+            {
+                client?.Dispose();
+            }
+
+            Console.WriteLine("All done");
+
+            //return true;
+        }
+
+        //[TearDown]
         public void TestTeardown()
         {
             if (TestContext.CurrentContext.Result.Outcome == ResultState.Success)

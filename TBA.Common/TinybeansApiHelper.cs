@@ -235,7 +235,7 @@ namespace TBA.Common
                     _logger.Error($"A {code} status code was returned, but honestly... WTH?? -- {response.Content?.ToString() ?? "(no content)"}");
                 }
 
-                // todo: early exit ??
+                throw new Exception($"A non-200 status code of {code} was returned while fetching the partial URL of '{partialUrl}'");
             }
 
             // got an http-ok response
