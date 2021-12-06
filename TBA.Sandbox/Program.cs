@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Ninject;
 using TBA.Common;
 
@@ -81,19 +82,19 @@ namespace TBA.Sandbox
 
         }
 
-        private static void Test02(IAppLogger logger, DateTime rangeStart, DateTime rangeEnd)
+        private static async Task Test02(IAppLogger logger, DateTime rangeStart, DateTime rangeEnd)
         {
             var jm = _kernel.Get<IJournalManager>();
             jm.DownloadFailed += WriteFailed;
             jm.DownloadSucceeded += WriteSuccess;
             var runtimeSettings = _kernel.Get<IRuntimeSettingsProvider>().GetRuntimeSettings();
-            var journalSummaries = jm.GetJournalSummaries();
+            var journalSummaries = await jm.GetJournalSummariesAsync();
             logger.Info($"Found journals: Count = {journalSummaries?.Count ?? 0}");
             journalSummaries?.ForEach(x => logger.Info($"  {x}"));
             var journalId = journalSummaries.First().Id;
-            var archives = jm.GetArchives(journalId.ToString(), rangeStart, rangeEnd);
+            var archives = await jm.GetArchivesAsync(journalId.ToString(), rangeStart, rangeEnd);
             logger.Info($"Found {archives.Count} archives.  Using {runtimeSettings.MaxThreadCount} thread(s) to fetch + write to disk now...");
-            jm.WriteArchivesToFileSystem(archives);
+            await jm.WriteArchivesToFileSystemAsync(archives);
             logger.Info($"Wrote {archives.Count} archives to disk.");
             jm.DownloadFailed -= WriteFailed;
             jm.DownloadSucceeded -= WriteSuccess;
@@ -109,22 +110,22 @@ namespace TBA.Sandbox
             Console.WriteLine($"[SUCCESS]  {info.ArchiveId} at {info.LocalUri}");
         }
 
-        private static void Test01(IAppLogger logger, DateTime rangeStart, DateTime rangeEnd)
+        private static async Task Test01(IAppLogger logger, DateTime rangeStart, DateTime rangeEnd)
         {
             var tbh = _kernel.Get<ITinybeansApiHelper>();
-            var journalSummaries = tbh.GetJournalSummaries();
+            var journalSummaries = await tbh.GetJournalSummariesAsync();
             logger.Info($"Found journals: Count = {journalSummaries?.Count ?? 0}");
             journalSummaries?.ForEach(x => logger.Info($"  {x}"));
 
             var journalId = journalSummaries.First().Id;
             var targetDate = new DateTime(2021, 1, 4);
 
-            var dayEntries = tbh.GetByDate(targetDate, journalId);
+            var dayEntries = await tbh.GetByDateAsync(targetDate, journalId);
 
-            var monthEntries = tbh.GetEntriesByYearMonth(targetDate, journalId);
+            var monthEntries = await tbh.GetEntriesByYearMonthAsync(targetDate, journalId);
 
             var jm = _kernel.Get<IJournalManager>();
-            var pool = jm.GetArchives(journalId.ToString(), rangeStart, rangeEnd);
+            var pool = await jm.GetArchivesAsync(journalId.ToString(), rangeStart, rangeEnd);
         }
     }
 }

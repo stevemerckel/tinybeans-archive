@@ -1,8 +1,4 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using NUnit.Framework;
-using NUnit.Framework.Interfaces;
+﻿using NUnit.Framework;
 using TBA.Common;
 
 namespace TBA.Tests.Integration
@@ -34,56 +30,6 @@ namespace TBA.Tests.Integration
         /// </summary>
         public TinybeansApiTests() : base(_sut)
         {
-        }
-
-        [Test]
-        //[GatewayTimeoutInconclusive]
-        [RetryOnGatewayTimeout(3)]
-        public async Task TestGatewayTimeout()
-        {
-            const string BaseUrl = "https://localhost:44343/";
-            //const string Endpoint = "api/";
-            const string Endpoint = "api/gt";
-
-            Console.WriteLine("Hitting URL: " + BaseUrl);
-            HttpClient client = null;
-            try
-            {
-                client = new HttpClient
-                {
-                    BaseAddress = new Uri(BaseUrl)
-                };
-                Console.WriteLine("Endpoint = " + Endpoint);
-                var response = await client.GetAsync(Endpoint);
-                Console.WriteLine("response = " + response);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine(ex);
-            }
-            finally
-            {
-                client?.Dispose();
-            }
-
-            Console.WriteLine("All done");
-
-            //return true;
-        }
-
-        //[TearDown]
-        public void TestTeardown()
-        {
-            if (TestContext.CurrentContext.Result.Outcome == ResultState.Success)
-                return; // nothing to do
-
-            // look for potential 504 (gateway timeout) errors, and mark as "inconclusive" instead
-            var errorMessage = TestContext.CurrentContext.Result.Message;
-            if (errorMessage.Contains("504") 
-                || errorMessage.Contains("Gateway Timeout", System.StringComparison.InvariantCultureIgnoreCase))
-            {
-                Assert.Inconclusive("504 HIT !!!");
-            }
         }
     }
 }

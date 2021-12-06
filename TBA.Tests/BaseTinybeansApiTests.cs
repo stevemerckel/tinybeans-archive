@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using TBA.Common;
 
@@ -27,7 +28,7 @@ namespace TBA.Tests
         public void Test_JournalSummaries_Success()
         {
             List<JournalSummary> summaries = null;
-            Assert.DoesNotThrow(() => summaries = _sut.GetJournalSummaries());
+            Assert.DoesNotThrow(async () => summaries = await _sut.GetJournalSummariesAsync());
             Assert.IsNotNull(summaries);
             Assert.IsTrue(summaries.Count > 0);
             summaries.ForEach(s =>
@@ -52,49 +53,53 @@ namespace TBA.Tests
 
         [Test]
         [Category(TestCategories.AccountSpecific)]
-        public void Test_EntriesBySingleDate_Success()
+        public async Task Test_EntriesBySingleDate_Success()
         {
             const int MinExpectedCount = 5;
             var target = DateTime.Parse("2018-09-19");
-            var journalId = _sut.GetJournalSummaries()?.Select(x => x.Id).FirstOrDefault() ?? null;
+            var journals = await _sut.GetJournalSummariesAsync();
+            var journalId = journals?.Select(x => x.Id).FirstOrDefault();
             if (journalId == null)
                 throw new InvalidOperationException("No journal ID was found!  Do you have a journal setup with Tinybeans?");
 
-            var entries = _sut.GetByDate(target, journalId.Value);
+            var entries = await _sut.GetByDateAsync(target, journalId.Value);
             ValidateReceivedEntries(entries, MinExpectedCount, target, journalId.Value);
         }
 
         [Test]
         [Category(TestCategories.AccountSpecific)]
-        public void Test_EntriesByYearMonth_Success()
+        public async Task Test_EntriesByYearMonth_Success()
         {
             const int MinExpectedCount = 5;
             var target = DateTime.Parse("2018-09-19");
-            var journalId = _sut.GetJournalSummaries()?.Select(x => x.Id).FirstOrDefault() ?? null;
+            var journals = await _sut.GetJournalSummariesAsync();
+            var journalId = journals?.Select(x => x.Id).FirstOrDefault();
             if (journalId == null)
                 throw new InvalidOperationException("No journal ID was found!  Do you have a journal setup with Tinybeans?");
 
-            var entries = _sut.GetEntriesByYearMonth(target, journalId.Value);
+            var entries = await _sut.GetEntriesByYearMonthAsync(target, journalId.Value);
             ValidateReceivedEntries(entries, MinExpectedCount, target, journalId.Value);
         }
 
         [Test]
-        public void Test_EntriesByYearMonth_NoEntriesFound_Fail()
+        public async Task Test_EntriesByYearMonth_NoEntriesFound_Fail()
         {
-            var journalId = _sut.GetJournalSummaries()?.Select(x => x.Id).FirstOrDefault() ?? null;
+            var journals = await _sut.GetJournalSummariesAsync();
+            var journalId = journals?.Select(x => x.Id).FirstOrDefault();
             if (journalId == null)
                 throw new InvalidOperationException("No journal ID was found!  Do you have a journal setup with Tinybeans?");
 
             var target = DateTime.Parse("1980-01-01"); // this is LONG before Tinybeans was created
             List<ITinybeansEntry> entries = null;
-            Assert.Throws<Exception>(() => entries = _sut.GetByDate(target, journalId.Value));
+            Assert.Throws<Exception>(async () => entries = await _sut.GetByDateAsync(target, journalId.Value));
             Assert.IsNull(entries);
         }
 
         [Test]
-        public void Test_EntriesBySingleDate_NoEntriesFound_Fail()
+        public async Task Test_EntriesBySingleDate_NoEntriesFound_Fail()
         {
-            var journalId = _sut.GetJournalSummaries()?.Select(x => x.Id).FirstOrDefault() ?? null;
+            var journals = await _sut.GetJournalSummariesAsync();
+            var journalId = journals?.Select(x => x.Id).FirstOrDefault();
             if (journalId == null)
                 throw new InvalidOperationException("No journal ID was found!  Do you have a journal setup with Tinybeans?");
 

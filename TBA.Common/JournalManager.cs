@@ -60,13 +60,13 @@ namespace TBA.Common
         public string Root { get; private set; }
 
         /// <inheritdoc />
-        public EntryDownloadInfo Download(ITinybeansEntry content, string destinationLocation)
+        public async Task<EntryDownloadInfo> DownloadAsync(ITinybeansEntry content, string destinationLocation)
         {
-            return TinybeansApi.Download(content, destinationLocation);
+            return await TinybeansApi.DownloadAsync(content, destinationLocation);
         }
 
         /// <inheritdoc />
-        public List<DateTime> FindDatesWithRecentChanges(string journalId)
+        public async Task<List<DateTime>> FindDatesWithRecentChangesAsync(string journalId)
         {
             if (FileManager.DirectoryExists(Root))
                 throw new Exception($"Cannot find root directory!  Tried looking here: '{Root}'");
@@ -78,7 +78,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public List<ITinybeansEntry> GetArchives(string journalId, DateTime start, DateTime end)
+        public async Task<List<ITinybeansEntry>> GetArchivesAsync(string journalId, DateTime start, DateTime end)
         {
             if (string.IsNullOrWhiteSpace(journalId))
                 throw new ArgumentException("Journal ID cannot be null/empty/whitespace !!");
@@ -95,7 +95,7 @@ namespace TBA.Common
             do
             {
                 // fetch current year-month combo of archive entries
-                var currentMonthPool = TinybeansApi.GetEntriesByYearMonth(currentYearMonth.Date, actualJournalId);
+                var currentMonthPool = await TinybeansApi.GetEntriesByYearMonthAsync(currentYearMonth.Date, actualJournalId);
                 if (currentMonthPool != null)
                     pool.AddRange(currentMonthPool);
 
@@ -113,30 +113,30 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public List<ITinybeansEntry> GetByDate(DateTime date, long journalId)
+        public async Task<List<ITinybeansEntry>> GetByDateAsync(DateTime date, long journalId)
         {
-            return TinybeansApi.GetByDate(date, journalId);
+            return await TinybeansApi.GetByDateAsync(date, journalId);
         }
 
         /// <inheritdoc />
-        public List<ITinybeansEntry> GetEntriesByYearMonth(DateTime yearMonth, long journalId)
+        public async Task<List<ITinybeansEntry>> GetEntriesByYearMonthAsync(DateTime yearMonth, long journalId)
         {
-            return TinybeansApi.GetEntriesByYearMonth(yearMonth, journalId);
+            return await TinybeansApi.GetEntriesByYearMonthAsync(yearMonth, journalId);
         }
 
         /// <inheritdoc />
-        public List<JournalSummary> GetJournalSummaries()
+        public async Task<List<JournalSummary>> GetJournalSummariesAsync()
         {
-            return TinybeansApi.GetJournalSummaries();
+            return await TinybeansApi.GetJournalSummariesAsync();
         }
 
         /// <inheritdoc />
-        public void WriteArchivesToFileSystem(List<ITinybeansEntry> archives)
+        public Task WriteArchivesToFileSystemAsync(List<ITinybeansEntry> archives)
         {
             if (archives == null || !archives.Any())
             {
                 _logger.Debug("No entries received!  Exiting method.");
-                return;
+                return null;
             }
 
             if (!FileManager.DirectoryExists(Root))
@@ -164,12 +164,13 @@ namespace TBA.Common
             //
 
             // write the archives to destination system
+            var t = new Task(() => { Console.WriteLine("meh"); });
             var localPathDictionary = new List<EntryDownloadInfo>(archives.Count);
-            var downloadBehavior = new Func<ITinybeansEntry, EntryDownloadInfo>((archive) =>
+            var downloadBehavior = new Func<ITinybeansEntry, EntryDownloadInfo>(archive =>
             {
                 var archiveLocalDirectory = DeterminePathToArchiveDirectory(archive, Root);
-                var downloadResults = TinybeansApi.Download(archive, archiveLocalDirectory);
-                return downloadResults;
+                var downloadResults = TinybeansApi.DownloadAsync(archive, archiveLocalDirectory);
+                return downloadResults.Result; // todo: convert FUNC to be async
             });
 
             var sw = new Stopwatch();
@@ -265,7 +266,7 @@ namespace TBA.Common
                 if (!currentMonthArchives.Any())
                 {
                     _logger.Debug($"For year-month of '{currentYearMonth.ToTinybeansMonthYearString()}' there are zero entries.  Moving on.");
-                    return;
+                    return null;
                 }
 
                 // write out each day's manifest
@@ -321,6 +322,7 @@ namespace TBA.Common
 
             sw.Stop();
             _logger.Info($"Processing time for writing manifests for {archives.Count} entries was {sw.ElapsedMilliseconds} ms");
+            return null;
         }
 
         /// <summary>

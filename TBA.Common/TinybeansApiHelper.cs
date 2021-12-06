@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace TBA.Common
@@ -38,15 +39,15 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public List<ITinybeansEntry> GetByDate(DateTime date, long journalId)
+        public async Task<List<ITinybeansEntry>> GetByDateAsync(DateTime date, long journalId)
         {
-            _logger.Info($"Fetching day info for journal ID '{journalId}' for date '{date.ToString("MM/dd/yyyy")}'");
+            _logger.Info($"Fetching day info for journal ID '{journalId}' for date '{date:MM/dd/yyyy}'");
 
             var partialUrl = $"/api/1/journals/{journalId}/entries?day={date.Day}&month={date.Month}&year={date.Year}&idsOnly=true";
-            var json = RestApiGetString(partialUrl, MediaTypeNames.Application.Json);
+            var json = await RestApiGetStringAsync(partialUrl, MediaTypeNames.Application.Json);
             if (string.IsNullOrWhiteSpace(json))
             {
-                _logger.Warn($"No JSON returned from {nameof(GetJournalSummaries)}");
+                _logger.Warn($"No JSON returned from {nameof(GetByDateAsync)}");
                 return null;
             }
 
@@ -54,15 +55,15 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public List<ITinybeansEntry> GetEntriesByYearMonth(DateTime yearMonth, long journalId)
+        public async Task<List<ITinybeansEntry>> GetEntriesByYearMonthAsync(DateTime yearMonth, long journalId)
         {
-            _logger.Info($"Fetching month info for journal ID '{journalId}' for date '{yearMonth.ToString("MMMM yyyy")}'");
+            _logger.Info($"Fetching month info for journal ID '{journalId}' for date '{yearMonth:MMMM yyyy}'");
 
             var partialUrl = $"/api/1/journals/{journalId}/entries?month={yearMonth.Month}&year={yearMonth.Year}&idsOnly=true";
-            var json = RestApiGetString(partialUrl, MediaTypeNames.Application.Json);
+            var json = await RestApiGetStringAsync(partialUrl, MediaTypeNames.Application.Json);
             if (string.IsNullOrWhiteSpace(json))
             {
-                _logger.Warn($"No JSON returned from {nameof(GetJournalSummaries)}");
+                _logger.Warn($"No JSON returned from {nameof(GetEntriesByYearMonthAsync)}");
                 return null;
             }
 
@@ -79,13 +80,13 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public List<JournalSummary> GetJournalSummaries()
+        public async Task<List<JournalSummary>> GetJournalSummariesAsync()
         {
             const string PartialUrl = "/api/1/journals";
-            var json = RestApiGetString(PartialUrl, MediaTypeNames.Application.Json);
+            var json = await RestApiGetStringAsync(PartialUrl, MediaTypeNames.Application.Json);
             if (string.IsNullOrWhiteSpace(json))
             {
-                _logger.Warn($"No JSON returned from {nameof(GetJournalSummaries)}");
+                _logger.Warn($"No JSON returned from {nameof(GetJournalSummariesAsync)}");
                 return null;
             }
 
@@ -93,7 +94,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public EntryDownloadInfo Download(ITinybeansEntry archive, string destinationDirectory)
+        public async Task<EntryDownloadInfo> DownloadAsync(ITinybeansEntry archive, string destinationDirectory)
         {
             if (archive.ArchiveType == ArchiveType.Text)
             {
@@ -128,7 +129,7 @@ namespace TBA.Common
 
                 if (downloadMe.Select(x => x.Item2).All(string.IsNullOrWhiteSpace))
                 {
-                    _logger.Error($"There were zero files to download for archive '{archive.Id}' on {archive.DisplayedOn.ToString("yyyy-MM-dd")}");
+                    _logger.Error($"There were zero files to download for archive '{archive.Id}' on {archive.DisplayedOn:yyyy-MM-dd}");
                     return null;
                 }
 
@@ -137,11 +138,11 @@ namespace TBA.Common
                 try
                 {
                     wc = new WebClient();
-                    downloadMe.ForEach(d =>
+                    downloadMe.ForEach(async d =>
                     {
                         _logger.Debug($"Began download of '{d.Item1}' to '{d.Item2}'");
                         _fileManager.CreateDirectory(destinationDirectory);
-                        wc.DownloadFile(d.Item1, d.Item2);
+                        await Task.Run(() => wc.DownloadFileAsync(new Uri(d.Item1), d.Item2));
                         _fileManager.FileUnblock(d.Item2);
                         _logger.Debug($"Finished download of '{d.Item1 ?? "[NULL]"}' to '{d.Item2}'");
                     });
@@ -205,7 +206,7 @@ namespace TBA.Common
         /// <param name="mediaTypeName">The response's media type name.  Recommended to use the <see cref="System.Net.Mime.MediaTypeNames"/> static class' properties instead of hard-coding a value.</param>
         /// <returns>Response content if successful</returns>
         /// <remarks>A pointer in direction of HttpResponseMessage containing GZip content came from Rick Strahl's blog (https://weblog.west-wind.com/posts/2007/jun/29/httpwebrequest-and-gzip-http-responses), then did some tuning on my original decompress based on DotNetPerls article (https://www.dotnetperls.com/decompress)</remarks>
-        private string RestApiGetString(string partialUrl, string mediaTypeName = null)
+        private async Task<string> RestApiGetStringAsync(string partialUrl, string mediaTypeName = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, partialUrl);
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(_runtimeSettings.AuthorizationHeaderValue);
@@ -217,7 +218,7 @@ namespace TBA.Common
             request.Headers.AcceptEncoding.Add(new System.Net.Http.Headers.StringWithQualityHeaderValue("gzip"));
             request.Headers.AcceptEncoding.Add(new System.Net.Http.Headers.StringWithQualityHeaderValue("deflate"));
 
-            HttpResponseMessage response = _httpClient.SendAsync(request).Result;
+            HttpResponseMessage response = await _httpClient.SendAsync(request);
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 // some failure happened
@@ -242,7 +243,7 @@ namespace TBA.Common
             string responseString;
             if (response.Content.Headers.ContentEncoding?.Contains("gzip") ?? false)
             {
-                using (GZipStream stream = new GZipStream(new MemoryStream(response.Content.ReadAsByteArrayAsync().Result), CompressionMode.Decompress))
+                using (GZipStream stream = new GZipStream(new MemoryStream(await response.Content.ReadAsByteArrayAsync()), CompressionMode.Decompress))
                 {
                     const int Size = 4096;
                     byte[] buffer = new byte[Size];
@@ -264,7 +265,7 @@ namespace TBA.Common
             }
             else
             {
-                responseString = response.Content.ReadAsStringAsync().Result;
+                responseString = await response.Content.ReadAsStringAsync();
             }
 
             // need to check the inner json "status" field to look for "ok"
