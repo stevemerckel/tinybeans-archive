@@ -36,6 +36,9 @@ namespace TBA.Tests
                 .Setup(x => x.Info(It.IsAny<string>()))
                 .Callback<string>(message => Console.WriteLine($"[{nameof(IAppLogger.Info)}]  {message}"));
             _mockLogger
+                .Setup(x => x.Verbose(It.IsAny<string>()))
+                .Callback<string>(message => Console.WriteLine($"[{nameof(IAppLogger.Verbose)}]  {message}"));
+            _mockLogger
                 .Setup(x => x.Warn(It.IsAny<string>()))
                 .Callback<string>(message => Console.WriteLine($"[{nameof(IAppLogger.Warn)}]  {message}"));
 

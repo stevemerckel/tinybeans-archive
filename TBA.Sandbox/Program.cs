@@ -11,7 +11,7 @@ namespace TBA.Sandbox
     {
         private static readonly IKernel _kernel = new StandardKernel(new Ioc());
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Console.WriteLine("SOP");
             if (args.Any())
@@ -39,7 +39,7 @@ namespace TBA.Sandbox
             logger.Info("Hello World!");
 
             //Test01(logger, rangeStart, rangeEnd);
-            Test02(logger, rangeStart, rangeEnd);
+            await Test02(logger, rangeStart, rangeEnd);
 
             Console.WriteLine();
             Console.WriteLine("EOP");

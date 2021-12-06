@@ -32,6 +32,12 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
+        public void Verbose(string message)
+        {
+            Write(nameof(Verbose), message);
+        }
+
+        /// <inheritdoc />
         public void Warn(string message)
         {
             Write(nameof(Warn), message);

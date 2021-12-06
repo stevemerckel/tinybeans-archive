@@ -35,6 +35,12 @@
         }
 
         /// <inheritdoc />
+        public void Verbose(string message)
+        {
+            _console.Verbose(message);
+        }
+
+        /// <inheritdoc />
         public void Warn(string message)
         {
             _console.Warn(message);

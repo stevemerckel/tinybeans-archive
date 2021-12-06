@@ -105,7 +105,7 @@ namespace TBA.Tests
 
             var target = DateTime.Parse("1980-01-01"); // this is LONG before Tinybeans was created
             List<ITinybeansEntry> entries = null;
-            Assert.Throws<Exception>(() => entries = _sut.GetByDate(target, journalId.Value));
+            Assert.Throws<Exception>(async () => entries = await _sut.GetByDateAsync(target, journalId.Value));
             Assert.IsNull(entries);
         }
 

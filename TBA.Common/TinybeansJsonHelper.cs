@@ -23,7 +23,7 @@ namespace TBA.Common
         /// <inheritdoc />
         public List<ITinybeansEntry> ParseArchivedContent(string json)
         {
-            _logger.Debug($"JSON response from {nameof(ParseArchivedContent)}:{Environment.NewLine}{json}");
+            _logger.Verbose($"JSON response from {nameof(ParseArchivedContent)}:{Environment.NewLine}{json}");
 
             var content = JObject.Parse(json);
             if (content["entries"] == null)
@@ -114,7 +114,7 @@ namespace TBA.Common
         /// <inheritdoc />
         public List<JournalSummary> ParseJournalSummaries(string json)
         {
-            _logger.Debug($"JSON response from {nameof(ParseJournalSummaries)}:{Environment.NewLine}{json}");
+            _logger.Verbose($"JSON response from {nameof(ParseJournalSummaries)}:{Environment.NewLine}{json}");
             var content = JObject.Parse(json);
             var journalEntities = (JArray)content["journals"];
             var journals = new List<JournalSummary>();

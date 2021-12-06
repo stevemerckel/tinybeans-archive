@@ -6,6 +6,11 @@
     public interface IAppLogger
     {
         /// <summary>
+        /// Writes verbose message
+        /// </summary>
+        void Verbose (string message);
+
+        /// <summary>
         /// Writes debug message
         /// </summary>
         void Debug(string message);

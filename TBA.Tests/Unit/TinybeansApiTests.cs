@@ -1,7 +1,9 @@
 ﻿using Moq;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TBA.Common;
 
 namespace TBA.Tests.Unit
@@ -42,8 +44,8 @@ namespace TBA.Tests.Unit
             var jsonHelper = new TinybeansJsonHelper(DefaultMocks.MockLogger);
 
             mockApi
-                .Setup(x => x.Download(It.IsAny<ITinybeansEntry>(), It.IsAny<string>()))
-                .Returns<ITinybeansEntry, string>((entry, path) =>
+                .Setup(x => x.DownloadAsync(It.IsAny<ITinybeansEntry>(), It.IsAny<string>()))
+                .ReturnsAsync<ITinybeansEntry, string, ITinybeansApiHelper, EntryDownloadInfo>((entry, path) =>
                 {
                     var localPath = _fileManager.PathCombine(path, "source-file.ext");
                     var squarePath = _fileManager.PathCombine(path, "square-image.ext");
@@ -51,8 +53,8 @@ namespace TBA.Tests.Unit
                     return new EntryDownloadInfo(entry.Id, localPath, squarePath, rectPath);
                 });
             mockApi
-                .Setup(x => x.GetByDate(It.IsAny<DateTime>(), It.IsAny<long>()))
-                .Returns<DateTime, long>((targetDate, journalId) =>
+                .Setup(x => x.GetByDateAsync(It.IsAny<DateTime>(), It.IsAny<long>()))
+                .ReturnsAsync<DateTime, long, ITinybeansApiHelper, List<ITinybeansEntry>>((targetDate, journalId) =>
                 {
                     var dayJsonLocation = _fileManager.PathCombine(_jsonSamplesLocation, DayEntriesFileName);
                     var pool = jsonHelper.ParseArchivedContent(_fileManager.FileReadAllText(dayJsonLocation));
@@ -66,8 +68,8 @@ namespace TBA.Tests.Unit
                     return matchesByDate.ToList();
                 });
             mockApi
-                .Setup(x => x.GetEntriesByYearMonth(It.IsAny<DateTime>(), It.IsAny<long>()))
-                .Returns<DateTime, long>((targetDate, journalId) =>
+                .Setup(x => x.GetEntriesByYearMonthAsync(It.IsAny<DateTime>(), It.IsAny<long>()))
+                .ReturnsAsync<DateTime, long, ITinybeansApiHelper, List<ITinybeansEntry>>((targetDate, journalId) =>
                 {
                     var dayJsonLocation = _fileManager.PathCombine(_jsonSamplesLocation, DayEntriesFileName);
                     var pool = jsonHelper.ParseArchivedContent(_fileManager.FileReadAllText(dayJsonLocation));
@@ -83,8 +85,8 @@ namespace TBA.Tests.Unit
                     return matchesByMonthRange.ToList();
                 });
             mockApi
-                .Setup(x => x.GetJournalSummaries())
-                .Returns(() =>
+                .Setup(x => x.GetJournalSummariesAsync())
+                .ReturnsAsync(() =>
                 {
                     var summaryJsonLocation = _fileManager.PathCombine(_jsonSamplesLocation, JournalSummaryFileName);
                     return jsonHelper.ParseJournalSummaries(_fileManager.FileReadAllText(summaryJsonLocation));
