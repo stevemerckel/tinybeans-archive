@@ -28,7 +28,7 @@ namespace TBA.Tests
         public void Test_JournalSummaries_Success()
         {
             List<JournalSummary> summaries = null;
-            Assert.DoesNotThrow(async () => summaries = await _sut.GetJournalSummariesAsync());
+            Assert.DoesNotThrowAsync(async () => summaries = await _sut.GetJournalSummariesAsync());
             Assert.IsNotNull(summaries);
             Assert.IsTrue(summaries.Count > 0);
             summaries.ForEach(s =>
@@ -91,7 +91,7 @@ namespace TBA.Tests
 
             var target = DateTime.Parse("1980-01-01"); // this is LONG before Tinybeans was created
             List<ITinybeansEntry> entries = null;
-            Assert.Throws<Exception>(async () => entries = await _sut.GetByDateAsync(target, journalId.Value));
+            Assert.ThrowsAsync<Exception>(async () => entries = await _sut.GetByDateAsync(target, journalId.Value));
             Assert.IsNull(entries);
         }
 
@@ -105,7 +105,7 @@ namespace TBA.Tests
 
             var target = DateTime.Parse("1980-01-01"); // this is LONG before Tinybeans was created
             List<ITinybeansEntry> entries = null;
-            Assert.Throws<Exception>(async () => entries = await _sut.GetByDateAsync(target, journalId.Value));
+            Assert.ThrowsAsync<Exception>(async () => entries = await _sut.GetByDateAsync(target, journalId.Value));
             Assert.IsNull(entries);
         }
 
