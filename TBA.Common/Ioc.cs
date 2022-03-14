@@ -17,7 +17,7 @@ namespace TBA.Common
             Bind<ITinybeansApiHelper>().To<TinybeansApiHelper>();
             Bind<IFileManager>().To<WindowsFileSystemManager>().InSingletonScope();
 
-            // fetch runtime location, include in JournalManager instance ctor
+            // fetch runtime location, include in ctor of IJournalManager implementation
             var runtimePath = Environment.CurrentDirectory;
             Bind<IJournalManager>()
                 .To<JournalManager>()

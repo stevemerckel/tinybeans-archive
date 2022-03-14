@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Trinet.Core.IO.Ntfs;
 
 namespace TBA.Common
@@ -97,13 +98,13 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public void FileWriteText(string fileLocation, string contents)
+        public async Task FileWriteTextAsync(string fileLocation, string contents)
         {
-            FileWriteText(fileLocation, contents, Encoding.UTF8);
+            await FileWriteTextAsync(fileLocation, contents, Encoding.UTF8);
         }
 
         /// <inheritdoc />
-        public void FileWriteText(string fileLocation, string contents, Encoding targetEncoding)
+        public async Task FileWriteTextAsync(string fileLocation, string contents, Encoding targetEncoding)
         {
             if (string.IsNullOrWhiteSpace(fileLocation))
                 throw new ArgumentNullException(nameof(fileLocation), "Value cannot be null or empty.");
@@ -112,22 +113,22 @@ namespace TBA.Common
 
             try
             {
-                File.WriteAllText(fileLocation, contents, targetEncoding);
+                await File.WriteAllTextAsync(fileLocation, contents, targetEncoding);
             }
             catch (IOException)
             {
                 Thread.Sleep(2);
-                File.WriteAllText(fileLocation, contents);
+                await File.WriteAllTextAsync(fileLocation, contents);
             }
             catch (UnauthorizedAccessException)
             {
                 Thread.Sleep(2);
-                File.WriteAllText(fileLocation, contents);
+                await File.WriteAllTextAsync(fileLocation, contents);
             }
         }
 
         /// <inheritdoc />
-        public void FileWriteBytes(string fileLocation, byte[] bits)
+        public async Task FileWriteBytesAsync(string fileLocation, byte[] bits)
         {
             if (string.IsNullOrWhiteSpace(fileLocation))
                 throw new ArgumentNullException(nameof(fileLocation), "Value cannot be null or empty.");
@@ -136,17 +137,17 @@ namespace TBA.Common
 
             try
             {
-                File.WriteAllBytes(fileLocation, bits);
+                await File.WriteAllBytesAsync(fileLocation, bits);
             }
             catch (IOException)
             {
                 Thread.Sleep(2);
-                File.WriteAllBytes(fileLocation, bits);
+                await File.WriteAllBytesAsync(fileLocation, bits);
             }
             catch (UnauthorizedAccessException)
             {
                 Thread.Sleep(2);
-                File.WriteAllBytes(fileLocation, bits);
+                await File.WriteAllBytesAsync(fileLocation, bits);
             }
         }
 
@@ -168,6 +169,46 @@ namespace TBA.Common
                 : SearchOption.TopDirectoryOnly;
 
             return Directory.GetDirectories(path, searchPattern, myOption);
+        }
+
+        /// <inheritdoc />
+        /// <remarks>
+        /// Much of the implementation based on these articles:
+        /// https://stackoverflow.com/questions/12415105/directory-is-not-empty-error-when-trying-to-programmatically-delete-a-folder
+        /// https://stackoverflow.com/questions/329355/cannot-delete-directory-with-directory-deletepath-true
+        /// </remarks>
+        public void DeleteDirectoryAndContents(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentNullException(nameof(path), "Value received was null/empty!");
+
+            foreach (var directory in Directory.GetDirectories(path))
+            {
+                DeleteDirectoryAndContents(directory);
+            }
+
+            var files = Directory.GetFiles(path, "*.*");
+            foreach (var file in files)
+            {
+                FileDelete(file);
+            }
+
+            var target = path.Trim();
+            try
+            {
+                Thread.Sleep(2);
+                Directory.Delete(target);
+            }
+            catch (IOException)
+            {
+                Thread.Sleep(2);
+                Directory.Delete(target);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Thread.Sleep(2);
+                Directory.Delete(target);
+            }
         }
 
         /// <inheritdoc />

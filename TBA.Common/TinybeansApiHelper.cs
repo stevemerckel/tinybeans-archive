@@ -104,7 +104,7 @@ namespace TBA.Common
 
                 var fileName = Guid.NewGuid().ToString("N");
                 var destinationLocation = _fileManager.PathCombine(destinationDirectory, $"{fileName}.txt");
-                _fileManager.FileWriteText(destinationLocation, archive.Caption, System.Text.Encoding.Unicode);
+                await _fileManager.FileWriteTextAsync(destinationLocation, archive.Caption, System.Text.Encoding.Unicode);
                 return new EntryDownloadInfo(archive.Id, destinationLocation, null, null);
             }
 
@@ -142,7 +142,7 @@ namespace TBA.Common
                     {
                         _logger.Debug($"Began download of '{d.Item1}' to '{d.Item2}'");
                         _fileManager.CreateDirectory(destinationDirectory);
-                        await Task.Run(() => wc.DownloadFileAsync(new Uri(d.Item1), d.Item2));
+                        await wc.DownloadFileTaskAsync(new Uri(d.Item1), d.Item2);
                         _fileManager.FileUnblock(d.Item2);
                         _logger.Debug($"Finished download of '{d.Item1 ?? "[NULL]"}' to '{d.Item2}'");
                     });

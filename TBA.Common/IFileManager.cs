@@ -1,4 +1,6 @@
-﻿namespace TBA.Common
+﻿using System.Threading.Tasks;
+
+namespace TBA.Common
 {
     /// <summary>
     /// Methods and functions for working with file systems
@@ -10,7 +12,7 @@
         /// </summary>
         /// <param name="fileLocation">The file path</param>
         /// <param name="contents">The text contents to write</param>
-        void FileWriteText(string fileLocation, string contents);
+        Task FileWriteTextAsync(string fileLocation, string contents);
 
         /// <summary>
         /// Creates a file at the specified location and writes the text received.  If the file exists, it will be overwritten.
@@ -18,14 +20,14 @@
         /// <param name="fileLocation">The file path</param>
         /// <param name="contents">The text contents to write</param>
         /// <param name="targetEncoding">The target encoding type</param>
-        void FileWriteText(string fileLocation, string contents, System.Text.Encoding targetEncoding);
+        Task FileWriteTextAsync(string fileLocation, string contents, System.Text.Encoding targetEncoding);
 
         /// <summary>
         /// Creates a file at the specified location and writes the bits received.  If the file exists, it will be overwritten.
         /// </summary>
         /// <param name="fileLocation">The file path</param>
         /// <param name="bits">The bits to write to the file</param>
-        void FileWriteBytes(string fileLocation, byte[] bits);
+        Task FileWriteBytesAsync(string fileLocation, byte[] bits);
 
         /// <summary>
         /// Whether or not the specified file exists
@@ -87,6 +89,12 @@
         /// <param name="includeSubDirs">true to include subdirectories in search results; otherwise, false. Default is false.</param>
         /// <returns>An array of string containing the directory paths.</returns>
         string[] GetDirectories(string path, string searchPattern, bool includeSubDirs = false);
+
+        /// <summary>
+        /// Deletes the  directory and all contents within.
+        /// </summary>
+        /// <param name="directory">Directory to purge</param>
+        void DeleteDirectoryAndContents(string path);
 
         /// <summary>
         /// Combines the two paths together

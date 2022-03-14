@@ -13,7 +13,7 @@ namespace TBA.Common
         /// Writes the received archives to the file system
         /// </summary>
         /// <param name="archives">The archives to write</param>
-        Task WriteArchivesToFileSystemAsync(List<ITinybeansEntry> archives);
+        Task<object> WriteArchivesToFileSystemAsync(List<ITinybeansEntry> archives);
 
         /// <summary>
         /// Looks for dates at the Tinybeans API having at least one change compared to the local copy

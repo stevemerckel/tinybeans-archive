@@ -131,7 +131,7 @@ namespace TBA.Common
         }
 
         /// <inheritdoc />
-        public Task WriteArchivesToFileSystemAsync(List<ITinybeansEntry> archives)
+        public async Task<object> WriteArchivesToFileSystemAsync(List<ITinybeansEntry> archives)
         {
             if (archives == null || !archives.Any())
             {
@@ -150,7 +150,7 @@ namespace TBA.Common
             //                  yyyy-MM.json (year-month json summary)
             //                  /day
             //                      yyyy-MM-dd.json (daily summary)
-            //                      *.[text|image|video]
+            //                      *.* [i.e. text,image,video]
 
             //
             // General Notes:
@@ -166,12 +166,12 @@ namespace TBA.Common
             // write the archives to destination system
             var t = new Task(() => { Console.WriteLine("meh"); });
             var localPathDictionary = new List<EntryDownloadInfo>(archives.Count);
-            var downloadBehavior = new Func<ITinybeansEntry, EntryDownloadInfo>(archive =>
-            {
-                var archiveLocalDirectory = DeterminePathToArchiveDirectory(archive, Root);
-                var downloadResults = TinybeansApi.DownloadAsync(archive, archiveLocalDirectory);
-                return downloadResults.Result; // todo: convert FUNC to be async
-            });
+            //var downloadBehavior = new Func<ITinybeansEntry, EntryDownloadInfo>(archive =>
+            //{
+            //    var archiveLocalDirectory = DeterminePathToArchiveDirectory(archive, Root);
+            //    var downloadResults = TinybeansApi.DownloadAsync(archive, archiveLocalDirectory);
+            //    return downloadResults.Result; // todo: convert FUNC to be async
+            //});
 
             var sw = new Stopwatch();
             sw.Start();
@@ -189,7 +189,7 @@ namespace TBA.Common
                     const int DelayInMs = 5000;
                     const int MaxAttemptCount = 3;
 
-                    g.ForEach(x =>
+                    g.ForEach(async x =>
                     {
                         var isProcessed = false;
                         EntryDownloadInfo currentDownload = null;
@@ -200,7 +200,7 @@ namespace TBA.Common
 
                             try
                             {
-                                currentDownload = downloadBehavior.Invoke(x);
+                                currentDownload = await DownloadArchiveAsync(x);
                                 localPathDictionary.Add(currentDownload);
                                 isProcessed = true;
                             }
@@ -279,7 +279,7 @@ namespace TBA.Common
                         .OrderBy(x => x.SortOverride ?? -1)
                         .ToList();
                     var dayManifestLoc = DeterminePathToWriteDayJsonManifest(currentDayEntries.First(), Root);
-                    FileManager.FileWriteText(dayManifestLoc, JsonConvert.SerializeObject(currentDayEntries, Formatting.Indented), System.Text.Encoding.Unicode);
+                    await FileManager.FileWriteTextAsync(dayManifestLoc, JsonConvert.SerializeObject(currentDayEntries, Formatting.Indented), System.Text.Encoding.Unicode);
                 }
 
                 //
@@ -316,13 +316,20 @@ namespace TBA.Common
                         .OrderBy(x => x.DisplayedOn)
                         .ToList();
                     var yearMonthJson = JsonConvert.SerializeObject(pool);
-                    FileManager.FileWriteText(yearMonthJsonLocation, yearMonthJson);
+                    await FileManager.FileWriteTextAsync(yearMonthJsonLocation, yearMonthJson);
                 }
             }
 
             sw.Stop();
             _logger.Info($"Processing time for writing manifests for {archives.Count} entries was {sw.ElapsedMilliseconds} ms");
             return null;
+        }
+
+        private async Task<EntryDownloadInfo> DownloadArchiveAsync(ITinybeansEntry archive)
+        {
+            var archiveLocalDirectory = DeterminePathToArchiveDirectory(archive, Root);
+            var downloadResults = await TinybeansApi.DownloadAsync(archive, archiveLocalDirectory);
+            return downloadResults;
         }
 
         /// <summary>
