@@ -122,8 +122,8 @@ namespace TBA.Tests
             foreach (var c in chars)
             {
                 var isHex = (c >= '0' && c <= '9')
-                            || (c >= 'A' && c <= 'F')
-                            || (c >= 'a' && c <= 'f');
+                    || (c >= 'A' && c <= 'F')
+                    || (c >= 'a' && c <= 'f');
                 
                 Assert.IsTrue(isHex, $"character '{c}' was found in hexadecimal hash of '{hash}' !!");
             }
