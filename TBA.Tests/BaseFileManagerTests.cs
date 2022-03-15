@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using TBA.Common;
@@ -27,12 +28,12 @@ namespace TBA.Tests
         public abstract void Test_EnsureProperPathSeparatorByHost_Success();
 
         [SetUp]
-        public void TestInitialize()
+        public void InitializeTest()
         {
             Assert.IsNotNull(_sut);
             Assert.IsFalse(string.IsNullOrWhiteSpace(RuntimeLocation));
             Assert.IsTrue(_sut.DirectoryExists(RuntimeLocation));
-            _logger.Info($"Finished {nameof(TestInitialize)}");
+            _logger.Info($"Finished {nameof(InitializeTest)}");
 
             // critical: generate the work location in file system
             _sut.CreateDirectory(_workLocation);
@@ -40,7 +41,7 @@ namespace TBA.Tests
         }
 
         [TearDown]
-        public void TestTeardown()
+        public void TeardownTest()
         {
             if (string.IsNullOrWhiteSpace(_workLocation))
             {
@@ -54,6 +55,7 @@ namespace TBA.Tests
                 return;
             }
 
+            _logger.Info($"Deleting temp folder + contents:  {_workLocation}");
             _sut.DeleteDirectoryAndContents(_workLocation);
         }
 
@@ -71,21 +73,69 @@ namespace TBA.Tests
         }
 
         [Test]
+        public async Task Test_WriteText_Multiline_Success()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("Line 01");
+            sb.AppendLine("Line Two");
+            sb.AppendLine("Line #3");
+
+            var content = sb.ToString();
+
+            var fileLocation = _sut.PathCombine(_workLocation, GenerateTempFileName("txt"));
+            await _sut.FileWriteTextAsync(fileLocation, content);
+            Assert.IsTrue(_sut.FileExists(fileLocation));
+            Assert.IsTrue(_sut.FileSize(fileLocation) > 0);
+            var readIn = _sut.FileReadAllText(fileLocation);
+            Assert.AreEqual(content, readIn);
+        }
+
+        [Test]
         public async Task Test_WriteText_ComplexWithEmoji_Success()
         {
             const string Content = "This emoji should be an upside down smiley: 🙃";
 
             var fileLocation = _sut.PathCombine(_workLocation, GenerateTempFileName("txt"));
-            await _sut.FileWriteTextAsync(fileLocation, Content, System.Text.Encoding.Unicode);
+            await _sut.FileWriteTextAsync(fileLocation, Content, Encoding.Unicode);
             Assert.IsTrue(_sut.FileExists(fileLocation));
             Assert.IsTrue(_sut.FileSize(fileLocation) > 0);
             var readIn = _sut.FileReadAllText(fileLocation);
             Assert.AreEqual(Content, readIn);
         }
 
+        [Test]
+        public async Task Test_MakeFileHash_EnsureOnlyHexadecimalCharacters_Success()
+        {
+            // write a txt file with random content
+            var content = GenerateTempDirectoryName();
+            var fileLocation = _sut.PathCombine(_workLocation, GenerateTempFileName("txt"));
+            await _sut.FileWriteTextAsync(fileLocation, content);
+            Assert.IsTrue(_sut.FileExists(fileLocation));
+            Assert.IsTrue(_sut.FileSize(fileLocation) > 0);
+
+            // generate hash
+            var hash = _sut.FileHash(fileLocation);
+            _logger.Info($"hash: {hash}");
+
+            // validate that only hexadecimal characters are in the hash
+            var chars = hash.ToCharArray();
+            foreach (var c in chars)
+            {
+                var isHex = (c >= '0' && c <= '9')
+                            || (c >= 'A' && c <= 'F')
+                            || (c >= 'a' && c <= 'f');
+                
+                Assert.IsTrue(isHex, $"character '{c}' was found in hexadecimal hash of '{hash}' !!");
+            }
+        }
+
         private static string GenerateTempFileName(string fileExtension)
         {
-            return $"{Guid.NewGuid().ToString("N").Substring(0, 10)}.{fileExtension}";
+            var targetExtension = string.IsNullOrWhiteSpace(fileExtension)
+                ? string.Empty
+                : fileExtension.Trim();
+
+            return $"{Guid.NewGuid().ToString("N").Substring(0, 10)}.{targetExtension}";
         }
 
         private static string GenerateTempDirectoryName()

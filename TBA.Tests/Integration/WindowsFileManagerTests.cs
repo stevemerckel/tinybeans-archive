@@ -11,6 +11,7 @@ namespace TBA.Tests.Integration
     public sealed class WindowsFileManagerTests : BaseFileManagerTests
     {
         private static readonly IFileManager _sut = new WindowsFileSystemManager();
+        private readonly IAppLogger _logger = DefaultMocks.MockLogger;
 
         public WindowsFileManagerTests() : base(_sut)
         {
@@ -26,7 +27,7 @@ namespace TBA.Tests.Integration
         public override void Test_EnsureProperPathSeparatorByHost_Success()
         {
             Assert.AreEqual(Path.DirectorySeparatorChar, _sut.DirectorySeparatorChar);
-            DefaultMocks.MockLogger.Info($"The override implementation of '{nameof(Test_EnsureProperPathSeparatorByHost_Success)}' did run!");
+            _logger.Info($"The override implementation of '{nameof(Test_EnsureProperPathSeparatorByHost_Success)}' did run!");
         }
     }
 }

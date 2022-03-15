@@ -58,7 +58,7 @@ namespace TBA.Common
             if (!FileExists(fileLocation))
                 throw new FileNotFoundException("File could not be found!", fileLocation);
 
-            using (MD5 md5Check = new MD5CryptoServiceProvider())
+            using (MD5 md5Check = MD5.Create())
             {
                 const int BufferSize = 1200000;
                 using (var localStream = new BufferedStream(File.OpenRead(fileLocation), BufferSize))
