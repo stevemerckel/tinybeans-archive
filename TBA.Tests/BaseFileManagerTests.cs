@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -12,17 +13,13 @@ namespace TBA.Tests
     public abstract class BaseFileManagerTests : TestBase
     {
         private readonly IFileManager _sut;
-        protected string RuntimeLocation = TestContext.CurrentContext.TestDirectory;
+        protected readonly string RuntimeLocation = TestContext.CurrentContext.TestDirectory;
         private readonly IAppLogger _logger = DefaultMocks.MockLogger;
-        private readonly string _workLocation;
+        private string _workLocation;
 
         public BaseFileManagerTests(IFileManager implementation)
         {
             _sut = implementation;
-
-            // declare desired subfolder for work tied to the current test
-            var workFolderName = GenerateTempDirectoryName();
-            _workLocation = _sut.PathCombine(RuntimeLocation, workFolderName);
         }
 
         public abstract void Test_EnsureProperPathSeparatorByHost_Success();
@@ -33,11 +30,14 @@ namespace TBA.Tests
             Assert.IsNotNull(_sut);
             Assert.IsFalse(string.IsNullOrWhiteSpace(RuntimeLocation));
             Assert.IsTrue(_sut.DirectoryExists(RuntimeLocation));
-            _logger.Info($"Finished {nameof(InitializeTest)}");
 
-            // critical: generate the work location in file system
+            // critical: generate the subfolder "work" location in file system
+            var workFolderName = GenerateTempDirectoryName();
+            _workLocation = _sut.PathCombine(RuntimeLocation, workFolderName);
             _sut.CreateDirectory(_workLocation);
             Assert.IsTrue(_sut.DirectoryExists(_workLocation));
+
+            _logger.Info($"Finished {nameof(InitializeTest)}");
         }
 
         [TearDown]
@@ -75,10 +75,17 @@ namespace TBA.Tests
         [Test]
         public async Task Test_WriteText_Multiline_Success()
         {
+            var list = new List<string>
+            {
+                "Line 01",
+                "Line Two",
+                "Line #3"
+            };
+
+            Assert.Greater(list.Count, 1, "More than one line is needed in the list of strings to meet test requirements !!");
+
             var sb = new StringBuilder();
-            sb.AppendLine("Line 01");
-            sb.AppendLine("Line Two");
-            sb.AppendLine("Line #3");
+            list.ForEach(x => sb.AppendLine(x));
 
             var content = sb.ToString();
 
@@ -88,6 +95,9 @@ namespace TBA.Tests
             Assert.IsTrue(_sut.FileSize(fileLocation) > 0);
             var readIn = _sut.FileReadAllText(fileLocation);
             Assert.AreEqual(content, readIn);
+            var newLineCharacterLength = Environment.NewLine.Length;
+            var newLineCount = (readIn.Length - readIn.Replace(Environment.NewLine, string.Empty).Length) / newLineCharacterLength;
+            Assert.AreEqual(list.Count, newLineCount);
         }
 
         [Test]
@@ -113,7 +123,7 @@ namespace TBA.Tests
             Assert.IsTrue(_sut.FileExists(fileLocation));
             Assert.IsTrue(_sut.FileSize(fileLocation) > 0);
 
-            // generate hash
+            // generate hash off the new temp file
             var hash = _sut.FileHash(fileLocation);
             _logger.Info($"hash: {hash}");
 
@@ -125,7 +135,7 @@ namespace TBA.Tests
                     || (c >= 'A' && c <= 'F')
                     || (c >= 'a' && c <= 'f');
                 
-                Assert.IsTrue(isHex, $"character '{c}' was found in hexadecimal hash of '{hash}' !!");
+                Assert.IsTrue(isHex, $"character '{c}' was found in hash that should only  hexadecimal hash of '{hash}' !!");
             }
         }
 
