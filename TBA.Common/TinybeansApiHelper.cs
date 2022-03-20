@@ -16,9 +16,14 @@ namespace TBA.Common
     {
         private readonly IAppLogger _logger;
         private readonly IRuntimeSettings _runtimeSettings;
-        private readonly HttpClient _httpClient;
+        private static readonly HttpClient _httpClient;
         private readonly ITinybeansJsonHelper _jsonHelper;
         private readonly IFileManager _fileManager;
+
+        static TinybeansApiHelper()
+        {
+            _httpClient = new HttpClient();
+        }
 
         /// <summary>
         /// Default ctor
@@ -31,11 +36,7 @@ namespace TBA.Common
             _jsonHelper = jsonHelper;
             _fileManager = fileManager;
 
-            // init http client
-            _httpClient = new HttpClient()
-            {
-                BaseAddress = new Uri(_runtimeSettings.ApiBaseUrl)
-            };
+            _httpClient.BaseAddress = new Uri(_runtimeSettings.ApiBaseUrl);
         }
 
         /// <inheritdoc />
@@ -133,18 +134,50 @@ namespace TBA.Common
                     return null;
                 }
 
-                WebClient wc = null;
                 string redirectUrl = null;
                 try
                 {
-                    wc = new WebClient();
                     downloadMe.ForEach(async d =>
                     {
-                        _logger.Debug($"Began download of '{d.Item1}' to '{d.Item2}'");
-                        _fileManager.CreateDirectory(destinationDirectory);
-                        await wc.DownloadFileTaskAsync(new Uri(d.Item1), d.Item2);
-                        _fileManager.FileUnblock(d.Item2);
-                        _logger.Debug($"Finished download of '{d.Item1 ?? "[NULL]"}' to '{d.Item2}'");
+                        const int MaxAttemptCount = 3;
+                        var attemptCount = 1;  // important
+                        var sourceUrl = d.Item1;
+                        var destinationLocation = d.Item2;
+
+                        while (true)
+                        {
+                            try
+                            {
+                                _logger.Debug($"Began download of '{sourceUrl}' to '{destinationLocation}'");
+                                _fileManager.CreateDirectory(destinationDirectory);
+                                //await wc.DownloadFileTaskAsync(new Uri(d.Item1), d.Item2);
+                                var stream = await _httpClient.GetStreamAsync(sourceUrl);
+                                var ms = new MemoryStream();
+                                stream.CopyTo(ms);
+                                await _fileManager.FileWriteBytesAsync(destinationLocation, ms.ToArray());
+                                _fileManager.FileUnblock(destinationLocation);
+                                _logger.Debug($"Finished download of '{sourceUrl ?? "[NULL]"}' to '{destinationLocation}'");
+                                break;
+                            }
+                            catch (HttpRequestException httpRequestEx)
+                            {
+                                _logger.Warn($"{nameof(HttpRequestException)} thrown trying to download '{sourceUrl}' -- {httpRequestEx}");
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.Warn($"{nameof(Exception)} thrown trying to download '{sourceUrl}' to path '{destinationLocation}' -- {ex}");
+                            }
+                            
+                            if (attemptCount >= MaxAttemptCount)
+                            {
+                                _logger.Error($"Failed to download url '{sourceUrl}' after {MaxAttemptCount} attempts -- see previous log messages for details.");
+                                break;
+                            }
+
+                            // brief delay before next retry
+                            await Task.Delay(2000 * attemptCount);
+                            attemptCount++;
+                        }
                     });
                 }
                 catch (WebException webEx)
@@ -171,10 +204,6 @@ namespace TBA.Common
                 {
                     _logger.Debug($"{nameof(Exception)} thrown trying to download '{archive.SourceUrl ?? "[NULL]"}' -- details: {ex}");
                     throw;
-                }
-                finally
-                {
-                    wc?.Dispose();
                 }
 
                 return new EntryDownloadInfo(archive.Id, mainContentLocation, thumbRectLocation, thumbSquareLocation);

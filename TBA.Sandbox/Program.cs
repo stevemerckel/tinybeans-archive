@@ -33,7 +33,7 @@ namespace TBA.Sandbox
 
             const int MonthCount = 60;
             var rangeStart = new DateTime(2017, 1, 1); // now.AddMonths(-1 * MonthCount);
-            var rangeEnd = rangeStart.AddMonths(12); // now;
+            var rangeEnd = rangeStart.AddMonths(36); // now;
 
             var logger = _kernel.Get<IAppLogger>();
             logger.Info("Hello World!");

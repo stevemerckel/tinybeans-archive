@@ -89,17 +89,15 @@ namespace TBA.Common
             if (!long.TryParse(journalId, out long actualJournalId))
                 throw new ArgumentException($"The value '{journalId}' cannot be parsed to {nameof(Int64)} !!");
 
-            // fetch the wider pool
+            // fetch a pool, incrementing at one-month-at-a-time
             var pool = new List<ITinybeansEntry>(512); // init with a large net to avoid perf hit of early expansions of List<T>
             var currentYearMonth = new DateTime(start.Year, start.Month, 1, 0, 0, 0, DateTimeKind.Local); // first day of the "start" year-month
             do
             {
-                // fetch current year-month combo of archive entries
                 var currentMonthPool = await TinybeansApi.GetEntriesByYearMonthAsync(currentYearMonth.Date, actualJournalId);
                 if (currentMonthPool != null)
                     pool.AddRange(currentMonthPool);
 
-                // add a month to "current" tracker
                 currentYearMonth = currentYearMonth.AddMonths(1);
             }
             while (currentYearMonth <= end.Date);
@@ -164,7 +162,6 @@ namespace TBA.Common
             //
 
             // write the archives to destination system
-            var t = new Task(() => { Console.WriteLine("meh"); });
             var localPathDictionary = new List<EntryDownloadInfo>(archives.Count);
             //var downloadBehavior = new Func<ITinybeansEntry, EntryDownloadInfo>(archive =>
             //{
