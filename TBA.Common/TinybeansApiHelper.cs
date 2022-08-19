@@ -150,11 +150,14 @@ namespace TBA.Common
                             {
                                 _logger.Debug($"Began download of '{sourceUrl}' to '{destinationLocation}'");
                                 _fileManager.CreateDirectory(destinationDirectory);
-                                //await wc.DownloadFileTaskAsync(new Uri(d.Item1), d.Item2);
-                                var stream = await _httpClient.GetStreamAsync(sourceUrl);
-                                var ms = new MemoryStream();
-                                stream.CopyTo(ms);
-                                await _fileManager.FileWriteBytesAsync(destinationLocation, ms.ToArray());
+                                using (var stream = await _httpClient.GetStreamAsync(sourceUrl))
+                                {
+                                    using (var ms = new MemoryStream())
+                                    {
+                                        await stream.CopyToAsync(ms);
+                                        await _fileManager.FileWriteBytesAsync(destinationLocation, ms.ToArray());
+                                    }
+                                }
                                 _fileManager.FileUnblock(destinationLocation);
                                 _logger.Debug($"Finished download of '{sourceUrl ?? "[NULL]"}' to '{destinationLocation}'");
                                 break;
